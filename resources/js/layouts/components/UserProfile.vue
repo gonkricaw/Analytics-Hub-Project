@@ -1,5 +1,18 @@
 <script setup>
+import LogoutModal from '@/components/LogoutModal.vue'
+import { useAuth } from '@/composables/useAuth.js'
 import avatar1 from '@images/avatars/avatar-1.png'
+
+// Authentication composable
+const { user } = useAuth()
+
+// State
+const showLogoutModal = ref(false)
+
+// Handle logout click
+const handleLogoutClick = () => {
+  showLogoutModal.value = true
+}
 </script>
 
 <template>
@@ -48,15 +61,18 @@ import avatar1 from '@images/avatars/avatar-1.png'
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              John Doe
+              {{ user?.name || 'User' }}
             </VListItemTitle>
-            <VListItemSubtitle>Admin</VListItemSubtitle>
+            <VListItemSubtitle>{{ user?.role || 'User' }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />
 
           <!-- 👉 Profile -->
-          <VListItem link>
+          <VListItem 
+            link
+            to="/profile"
+          >
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -111,7 +127,10 @@ import avatar1 from '@images/avatars/avatar-1.png'
           <VDivider class="my-2" />
 
           <!-- 👉 Logout -->
-          <VListItem to="/login">
+          <VListItem 
+            link
+            @click="handleLogoutClick"
+          >
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -127,4 +146,7 @@ import avatar1 from '@images/avatars/avatar-1.png'
       <!-- !SECTION -->
     </VAvatar>
   </VBadge>
+
+  <!-- Logout Modal -->
+  <LogoutModal v-model="showLogoutModal" />
 </template>

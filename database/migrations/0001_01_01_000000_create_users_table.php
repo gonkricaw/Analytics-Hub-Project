@@ -27,12 +27,6 @@ return new class extends Migration
             $table->foreign('invited_by')->references('id')->on('idnbi_users')->onDelete('set null');
         });
 
-        Schema::create('idnbi_password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
         Schema::create('idnbi_sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -49,7 +43,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('idnbi_users');
-        Schema::dropIfExists('idnbi_password_reset_tokens');
         Schema::dropIfExists('idnbi_sessions');
     }
 };

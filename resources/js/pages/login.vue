@@ -1,5 +1,5 @@
 <script setup>
-import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
+import { useAuth } from '@/composables/useAuth.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
@@ -9,7 +9,6 @@ import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
-import { useAuth } from '@/composables/useAuth.js'
 
 definePage({
   meta: {
@@ -93,13 +92,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           />
         </div>
 
-        <img
+        <!-- <img
           class="auth-footer-mask flip-in-rtl"
           :src="authThemeMask"
           alt="auth-footer-mask"
           height="280"
           width="100"
-        >
+        > -->
       </div>
     </VCol>
 
@@ -115,8 +114,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}</span>! 👋🏻
+            Welcome to
           </h4>
+          <h1><span class="text-capitalize">{{ themeConfig.app.title }}</span>!</h1>
+          <br>
           <p class="mb-0">
             Please sign-in to your account and start the adventure
           </p>
@@ -139,9 +140,9 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <AppTextField
                   v-model="form.email"
                   autofocus
-                  label="Email or Username"
+                  label="Email Account"
                   type="email"
-                  placeholder="johndoe@email.com"
+                  placeholder="your.email@indonet.id"
                 />
               </VCol>
 
@@ -162,12 +163,12 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                     v-model="form.remember"
                     label="Remember me"
                   />
-                  <a
+                  <RouterLink
+                    to="/forgot-password"
                     class="text-primary"
-                    href="javascript:void(0)"
                   >
                     Forgot Password?
-                  </a>
+                  </RouterLink>
                 </div>
 
                 <VBtn
@@ -181,7 +182,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               </VCol>
 
               <!-- create account -->
-              <VCol
+              <!-- <VCol
                 cols="12"
                 class="text-body-1 text-center"
               >
@@ -194,24 +195,24 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 >
                   Create an account
                 </a>
-              </VCol>
+              </VCol> -->
 
               <VCol
                 cols="12"
                 class="d-flex align-center"
               >
                 <VDivider />
-                <span class="mx-4">or</span>
+                <!-- <span class="mx-4">or</span> -->
                 <VDivider />
               </VCol>
 
               <!-- auth providers -->
-              <VCol
+              <!-- <VCol
                 cols="12"
                 class="text-center"
               >
                 <AuthProvider />
-              </VCol>
+              </VCol> -->
             </VRow>
           </VForm>
         </VCardText>

@@ -29,6 +29,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'last_active_at' => now(),
+            'temporary_password_used' => false,
+            'invited_by' => null, // Default to null to avoid foreign key constraint issues
         ];
     }
 

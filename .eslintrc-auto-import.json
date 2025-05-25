@@ -361,6 +361,18 @@
     "watchWithFilter": true,
     "whenever": true,
     "setupAuthGuards": true,
-    "useAuth": true
+    "useAuth": true,
+    "flashNotifications": true,
+    "useFlashNotifications": true,
+    "autoLogout": true,
+    "useAutoLogout": true,
+    "setupGlobalErrorHandler": true,
+    "useErrorHandler": true,
+    "createChunkName": true,
+    "lazyLoad": true,
+    "useLazyImage": true,
+    "useMemoryManagement": true,
+    "usePerformance": true,
+    "useResourcePreloader": true
   }
 }
