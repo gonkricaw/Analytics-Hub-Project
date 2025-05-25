@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Admin\UserInvitationController;
 use App\Http\Controllers\Admin\TermsAndConditionsController;
 use App\Http\Controllers\Admin\IpBlockController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserRoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +69,35 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{ipBlock}', [IpBlockController::class, 'show']);
             Route::post('/{ipBlock}/unblock', [IpBlockController::class, 'unblock']);
             Route::post('/bulk-unblock', [IpBlockController::class, 'bulkUnblock']);
+        });
+
+        // RBAC - Permission Management
+        Route::prefix('permissions')->group(function () {
+            Route::get('/', [PermissionController::class, 'index']);
+            Route::post('/', [PermissionController::class, 'store']);
+            Route::get('/{permission}', [PermissionController::class, 'show']);
+            Route::put('/{permission}', [PermissionController::class, 'update']);
+            Route::delete('/{permission}', [PermissionController::class, 'destroy']);
+        });
+
+        // RBAC - Role Management
+        Route::prefix('roles')->group(function () {
+            Route::get('/', [RoleController::class, 'index']);
+            Route::post('/', [RoleController::class, 'store']);
+            Route::get('/{role}', [RoleController::class, 'show']);
+            Route::put('/{role}', [RoleController::class, 'update']);
+            Route::delete('/{role}', [RoleController::class, 'destroy']);
+            Route::post('/{role}/permissions', [RoleController::class, 'assignPermissions']);
+            Route::delete('/{role}/permissions/{permission}', [RoleController::class, 'removePermission']);
+        });
+
+        // RBAC - User Role Management
+        Route::prefix('user-roles')->group(function () {
+            Route::get('/', [UserRoleController::class, 'index']);
+            Route::get('/users/{user}', [UserRoleController::class, 'getUserRoles']);
+            Route::post('/users/{user}/roles', [UserRoleController::class, 'assignRole']);
+            Route::delete('/users/{user}/roles/{role}', [UserRoleController::class, 'removeRole']);
+            Route::post('/users/{user}/sync-roles', [UserRoleController::class, 'syncRoles']);
         });
     });
 });

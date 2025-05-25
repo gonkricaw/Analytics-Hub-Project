@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -129,5 +130,93 @@ class User extends Authenticatable
         }
 
         return $this->last_active_at->diffInMinutes(now()) >= $minutes;
+    }
+
+    /**
+     * Get the roles that belong to this user.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'idnbi_role_user', 'user_id', 'role_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Check if the user has a specific role.
+     */
+    public function hasRole(string|Role $role): bool
+    {
+        if ($role instanceof Role) {
+            return $this->roles()->where('idnbi_roles.id', $role->id)->exists();
+        }
+        
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    /**
+     * Check if the user has all specified roles.
+     */
+    public function hasAllRoles(array $roleNames): bool
+    {
+        $userRoles = $this->roles()->pluck('name')->toArray();
+        return empty(array_diff($roleNames, $userRoles));
+    }
+
+    /**
+     * Check if the user has any of the specified roles.
+     */
+    public function hasAnyRole(array $roleNames): bool
+    {
+        return $this->roles()->whereIn('name', $roleNames)->exists();
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     */
+    public function hasPermission(string|Permission $permission): bool
+    {
+        if ($permission instanceof Permission) {
+            return $this->roles()
+                        ->whereHas('permissions', function ($query) use ($permission) {
+                            $query->where('idnbi_permissions.id', $permission->id);
+                        })
+                        ->exists();
+        }
+        
+        return $this->roles()
+                    ->whereHas('permissions', function ($query) use ($permission) {
+                        $query->where('name', $permission);
+                    })
+                    ->exists();
+    }
+
+    /**
+     * Check if the user has any of the specified permissions.
+     */
+    public function hasAnyPermission(array $permissionNames): bool
+    {
+        return $this->roles()
+                    ->whereHas('permissions', function ($query) use ($permissionNames) {
+                        $query->whereIn('name', $permissionNames);
+                    })
+                    ->exists();
+    }
+
+    /**
+     * Get all permissions for this user through their roles.
+     */
+    public function getAllPermissions()
+    {
+        return Permission::whereHas('roles', function ($query) {
+            $query->whereIn('idnbi_roles.id', $this->roles()->pluck('idnbi_roles.id'));
+        })->get();
+    }
+
+    /**
+     * Sync roles to this user.
+     */
+    public function syncRoles(array $roleIds): void
+    {
+        $this->roles()->sync($roleIds);
     }
 }

@@ -226,15 +226,15 @@ This document outlines the detailed tasks required for the development of the "I
 * **Pre-Implementation Check:** Review general guidelines, overall plan, logical system, and config files.
 
 * **Tasks:**
-    * [ ] **Database Schema (PostgreSQL):**
-        * [ ] Create `roles` table (id, name, display_name, description). Name should be unique (e.g., 'admin', 'manager', 'sales_user').
-        * [ ] Create `permissions` table (id, name, display_name, description). Name should be unique (e.g., 'create-users', 'edit-content', 'view-reports').
-        * [ ] Create `role_user` pivot table (user_id, role_id).
-        * [ ] Create `permission_role` pivot table (permission_id, role_id).
-        * [ ] Run migrations.
-    * [ ] **Backend (Laravel):**
-        * [ ] Create Eloquent models: `Role`, `Permission`.
-        * [ ] Define relationships in models (`User` hasMany `Role`, `Role` hasMany `Permission`, etc.).
+    * [√] **Database Schema (PostgreSQL):**
+        * [√] Create `roles` table (id, name, display_name, description, color, is_system). Name should be unique (e.g., 'admin', 'manager', 'sales_user').
+        * [√] Create `permissions` table (id, name, display_name, description, group). Name should be unique (e.g., 'create-users', 'edit-content', 'view-reports').
+        * [√] Create `role_user` pivot table (user_id, role_id).
+        * [√] Create `permission_role` pivot table (permission_id, role_id).
+        * [√] Run migrations.
+    * [√] **Backend (Laravel):**
+        * [√] Create Eloquent models: `Role`, `Permission`.
+        * [√] Define relationships in models (`User` hasMany `Role`, `Role` hasMany `Permission`, etc.).
         * [ ] **Permissions Management (Admin API Endpoints):**
             * [ ] GET `/api/admin/permissions` (List all permissions).
             * [ ] POST `/api/admin/permissions` (Create new permission: name, display_name, description).
@@ -249,16 +249,16 @@ This document outlines the detailed tasks required for the development of the "I
         * [ ] **User Role Assignment (Admin API Endpoints - extend User Management):**
             * [ ] GET `/api/admin/users/{id}/roles` (Get roles for a user).
             * [ ] PUT `/api/admin/users/{id}/roles` (Assign/sync roles to a user).
-        * [ ] **Authorization Logic:**
-            * [ ] Implement Laravel Gates and/or Policies for all relevant models and actions.
-            * [ ] Examples: `UserPolicy` (can view, create, update, delete users), `ContentPolicy`, `MenuPolicy`.
-            * [ ] Use these policies in controllers to authorize actions.
-            * [ ] Create middleware for route-level role/permission checks if needed.
-        * [ ] **Seeders:**
-            * [ ] Create `RolesSeeder` (e.g., 'Admin', 'Manager', 'User').
-            * [ ] Create `PermissionsSeeder` for all core permissions.
-            * [ ] Seed default role-permission assignments (e.g., Admin gets all permissions).
-            * [ ] Assign 'Admin' role to the initial admin user.
+        * [√] **Authorization Logic:**
+            * [√] Implement Laravel Gates and/or Policies for all relevant models and actions.
+            * [√] Examples: `UserPolicy` (can view, create, update, delete users), `PermissionPolicy`, `RolePolicy`.
+            * [√] Use these policies in controllers to authorize actions.
+            * [√] Create middleware for route-level role/permission checks if needed.
+        * [√] **Seeders:**
+            * [√] Create `RolesSeeder` (e.g., 'Admin', 'Manager', 'User').
+            * [√] Create `PermissionsSeeder` for all core permissions.
+            * [√] Seed default role-permission assignments (e.g., Admin gets all permissions).
+            * [√] Assign 'Admin' role to the initial admin user.
     * [ ] **Frontend (Vue.js - Admin Panel Section):**
         * [ ] Create UI sections for managing Permissions:
             * List permissions with options to Create, Edit, Delete.
@@ -273,10 +273,10 @@ This document outlines the detailed tasks required for the development of the "I
             * Conditionally render UI elements (buttons, menu items) based on user permissions fetched from backend or determined client-side after login (if permissions are part of user payload).
             * Protect Vue routes using navigation guards that check user roles/permissions.
             * Display access rights/roles as **badges** in user listings or profile views if required.
-    * [ ] **Testing:**
-        * [ ] Unit tests for Role, Permission models and relationships.
+    * [√] **Testing:**
+        * [√] Unit tests for Role, Permission models and relationships.
         * [ ] Feature tests for all RBAC API endpoints.
-        * [ ] Test authorization logic (Gates/Policies) thoroughly.
+        * [√] Test authorization logic (Gates/Policies) thoroughly.
         * [ ] Frontend tests for admin panel RBAC UIs.
         * [ ] End-to-end tests: Log in as different roles and verify access restrictions.
 

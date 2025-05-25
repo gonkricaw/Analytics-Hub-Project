@@ -7,11 +7,8 @@ Indonet Analytics Hub is a role-based web application designed to deliver dynami
 [![GitHub](https://img.shields.io/badge/GitHub-IndonetAnalyticsHub-blue.svg)](https://github.com/IndonetAnalyticsHub)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-1.0.0-orange.svg)](https://github.com/IndonetAnalyticsHub)
-[![Last Updated](https://img.shields.io/badge/last__updated-2025--05--15-red.svg)](https://github.com/IndonetAnalyticsHub)
 [![Contributors](https://img.shields.io/badge/contributors-5-yellow.svg)](https://github.com/IndonetAnalyticsHub)
 [![Documentation](https://img.shields.io/badge/documentation-available-brightgreen.svg)](https://github.com/IndonetAnalyticsHub)
-[![Issues](https://img.shields.io/badge/issues-welcome-red.svg)](https://github.com/IndonetAnalyticsHub)
-[![Pull Requests](https://img.shields.io/badge/pull_requests-welcome-brightgreen.svg)](https://github.com/IndonetAnalyticsHub)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/IndonetAnalyticsHub)
 
 </div>

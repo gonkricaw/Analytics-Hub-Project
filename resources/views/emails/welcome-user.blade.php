@@ -28,10 +28,9 @@
     <h3>Key Features Available to You:</h3>
     <ul>
         <li>📊 Real-time Analytics Dashboards</li>
-        <li>📈 Custom Report Generation</li>
+        <li>📈 Request for Custom Report</li>
         <li>🔍 Advanced Data Filtering</li>
         <li>👥 Team Collaboration Tools</li>
-        <li>📧 Automated Report Scheduling</li>
         <li>🔒 Secure Data Access Controls</li>
     </ul>
     
@@ -47,7 +46,7 @@
     
     <p>We're excited to have you on board and look forward to helping you unlock powerful insights from your data!</p>
     
-    <p>Best regards,<br>The Indonet Analytics Hub Team</p>
+    <p>Best regards,<br>Business Intelligence Team</p>
     
     <p class="small-text">This welcome email was sent to {{ $user->email }}. You're receiving this because your account was recently activated on our platform.</p>
 @endsection
