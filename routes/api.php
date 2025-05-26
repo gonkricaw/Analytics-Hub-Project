@@ -13,6 +13,8 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\ContentController as AdminContentController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Api\UserNotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,6 +130,27 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{content}/preview', [AdminContentController::class, 'preview']);
             Route::get('/statistics', [AdminContentController::class, 'statistics']);
         });
+
+        // Notification Management
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [NotificationController::class, 'index']);
+            Route::post('/', [NotificationController::class, 'store']);
+            Route::get('/statistics', [NotificationController::class, 'statistics']);
+            Route::get('/{notification}', [NotificationController::class, 'show']);
+            Route::put('/{notification}', [NotificationController::class, 'update']);
+            Route::delete('/{notification}', [NotificationController::class, 'destroy']);
+            Route::post('/{notification}/resend', [NotificationController::class, 'resend']);
+        });
+    });
+
+    // User Notifications
+    Route::prefix('user/notifications')->group(function () {
+        Route::get('/', [UserNotificationController::class, 'index']);
+        Route::get('/unread-count', [UserNotificationController::class, 'unreadCount']);
+        Route::post('/mark-all-read', [UserNotificationController::class, 'markAllAsRead']);
+        Route::post('/{notification}/mark-read', [UserNotificationController::class, 'markAsRead']);
+        Route::post('/{notification}/mark-unread', [UserNotificationController::class, 'markAsUnread']);
+        Route::delete('/{notification}', [UserNotificationController::class, 'destroy']);
     });
 
     // Frontend Menu Access

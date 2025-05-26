@@ -5,6 +5,11 @@ export default [
     icon: { icon: 'tabler-smart-home' },
   },
   {
+    title: 'Notifications',
+    to: { name: 'notifications' },
+    icon: { icon: 'tabler-bell' },
+  },
+  {
     title: 'Second page',
     to: { name: 'second-page' },
     icon: { icon: 'tabler-file' },
