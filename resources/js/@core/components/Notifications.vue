@@ -23,6 +23,7 @@ const emit = defineEmits([
   'unread',
   'remove',
   'click:notification',
+  'view-all',
 ])
 
 const isAllMarkRead = computed(() => {
@@ -39,6 +40,10 @@ const markAllReadOrUnread = () => {
 
 const totalUnseenNotifications = computed(() => {
   return props.notifications.filter(item => item.isSeen === false).length
+})
+
+const hasUnreadNotifications = computed(() => {
+  return totalUnseenNotifications.value > 0
 })
 
 const toggleReadUnread = (isSeen, Id) => {
@@ -58,6 +63,8 @@ const toggleReadUnread = (isSeen, Id) => {
       dot
       offset-x="2"
       offset-y="3"
+      class="notification-badge"
+      :class="{ 'pulse-animation': hasUnreadNotifications }"
     >
       <VIcon icon="tabler-bell" />
     </VBadge>
@@ -204,6 +211,7 @@ const toggleReadUnread = (isSeen, Id) => {
           <VBtn
             block
             size="small"
+            @click="$emit('view-all')"
           >
             View All Notifications
           </VBtn>
@@ -246,6 +254,28 @@ const toggleReadUnread = (isSeen, Id) => {
     min-width: 18px;
     padding: 0;
     block-size: 18px;
+  }
+
+  &.pulse-animation .v-badge__badge {
+    animation: pulse 2s infinite;
+  }
+}
+
+// Pulse animation for unread notifications
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 </style>
