@@ -49,6 +49,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<string>
+     */
+    protected $appends = [
+        'avatar',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -62,6 +71,14 @@ class User extends Authenticatable
             'temporary_password_used' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the avatar attribute (alias for profile_photo_path).
+     */
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->profile_photo_path;
     }
 
     /**
@@ -173,9 +190,9 @@ class User extends Authenticatable
     /**
      * Check if the user has a specific permission.
      */
-    public function hasPermission(string|Permission $permission): bool
+    public function hasPermission(string|\App\Models\Permission $permission): bool
     {
-        if ($permission instanceof Permission) {
+        if ($permission instanceof \App\Models\Permission) {
             return $this->roles()
                         ->whereHas('permissions', function ($query) use ($permission) {
                             $query->where('idnbi_permissions.id', $permission->id);
@@ -207,7 +224,7 @@ class User extends Authenticatable
      */
     public function getAllPermissions()
     {
-        return Permission::whereHas('roles', function ($query) {
+        return \App\Models\Permission::whereHas('roles', function ($query) {
             $query->whereIn('idnbi_roles.id', $this->roles()->pluck('idnbi_roles.id'));
         })->get();
     }

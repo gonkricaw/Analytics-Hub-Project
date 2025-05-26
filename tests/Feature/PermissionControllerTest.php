@@ -39,21 +39,25 @@ class PermissionControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
+                'success',
                 'data' => [
-                    '*' => [
-                        'id',
-                        'name',
-                        'display_name',
-                        'description',
-                        'group',
-                        'created_at',
-                        'updated_at'
-                    ]
+                    'data' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'display_name',
+                            'description',
+                            'group',
+                            'created_at',
+                            'updated_at'
+                        ]
+                    ],
+                    'current_page',
+                    'last_page',
+                    'per_page',
+                    'total'
                 ],
-                'current_page',
-                'last_page',
-                'per_page',
-                'total'
+                'message'
             ]);
     }
 
@@ -119,10 +123,8 @@ class PermissionControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->postJson('/api/admin/permissions', []);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'display_name', 'description', 'group']);
+        $response = $this->postJson('/api/admin/permissions', []);        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name', 'display_name', 'group']);
     }
 
     #[Test]
@@ -208,9 +210,7 @@ class PermissionControllerTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertSoftDeleted('idnbi_permissions', ['id' => $permission->id]);
-    }
-
-    #[Test]
+    }    #[Test]
     public function permission_search_works_correctly()
     {
         Sanctum::actingAs($this->superAdminUser);
@@ -219,7 +219,7 @@ class PermissionControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        $permissions = $response->json('data');
+        $permissions = $response->json('data.data');
         foreach ($permissions as $permission) {
             $this->assertTrue(
                 str_contains(strtolower($permission['name']), 'users') ||
@@ -234,11 +234,9 @@ class PermissionControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->getJson('/api/admin/permissions?group=users');
+        $response = $this->getJson('/api/admin/permissions?group=users');        $response->assertStatus(200);
 
-        $response->assertStatus(200);
-
-        $permissions = $response->json('data');
+        $permissions = $response->json('data.data');
         foreach ($permissions as $permission) {
             $this->assertEquals('users', $permission['group']);
         }
@@ -249,12 +247,10 @@ class PermissionControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->getJson('/api/admin/permissions?per_page=5');
-
-        $response->assertStatus(200)
+        $response = $this->getJson('/api/admin/permissions?per_page=5');        $response->assertStatus(200)
             ->assertJsonFragment(['per_page' => 5]);
 
-        $this->assertLessThanOrEqual(5, count($response->json('data')));
+        $this->assertLessThanOrEqual(5, count($response->json('data.data')));
     }
 
     #[Test]

@@ -37,10 +37,15 @@ class PermissionController extends Controller
             if ($request->has('search') && !empty($request->search)) {
                 $searchTerm = $request->search;
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'ILIKE', "%{$searchTerm}%")
-                      ->orWhere('display_name', 'ILIKE', "%{$searchTerm}%")
-                      ->orWhere('description', 'ILIKE', "%{$searchTerm}%");
+                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchTerm) . '%'])
+                      ->orWhereRaw('LOWER(display_name) LIKE ?', ['%' . strtolower($searchTerm) . '%'])
+                      ->orWhereRaw('LOWER(description) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
                 });
+            }
+
+            // Group filter
+            if ($request->has('group') && !empty($request->group)) {
+                $query->where('group', $request->group);
             }
 
             // Sorting

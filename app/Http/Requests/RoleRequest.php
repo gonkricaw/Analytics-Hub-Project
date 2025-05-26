@@ -32,21 +32,30 @@ class RoleRequest extends FormRequest
 
         return [
             'name' => [
-                'required',
+                $this->isMethod('POST') ? 'required' : 'sometimes',
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9-_]+$/', // Only lowercase, numbers, hyphens, underscores
                 Rule::unique('idnbi_roles', 'name')->ignore($roleId),
             ],
             'display_name' => [
-                'required',
+                $this->isMethod('POST') ? 'required' : 'sometimes',
                 'string',
                 'max:255',
             ],
             'description' => [
-                'nullable',
+                $this->isMethod('POST') ? 'required' : 'sometimes',
                 'string',
                 'max:1000',
+            ],
+            'color' => [
+                $this->isMethod('POST') ? 'required' : 'sometimes',
+                'string',
+                'regex:/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', // Valid hex color
+            ],
+            'is_system' => [
+                'sometimes',
+                'boolean',
             ],
             'permission_ids' => [
                 'sometimes',
@@ -69,6 +78,8 @@ class RoleRequest extends FormRequest
             'name' => 'role name',
             'display_name' => 'display name',
             'description' => 'description',
+            'color' => 'color',
+            'is_system' => 'system role flag',
             'permission_ids' => 'permissions',
         ];
     }
@@ -83,6 +94,7 @@ class RoleRequest extends FormRequest
         return [
             'name.regex' => 'The role name may only contain lowercase letters, numbers, hyphens, and underscores.',
             'name.unique' => 'A role with this name already exists.',
+            'color.regex' => 'The color must be a valid hex color code (e.g., #FF5722 or #F00).',
             'permission_ids.*.exists' => 'One or more selected permissions do not exist.',
         ];
     }

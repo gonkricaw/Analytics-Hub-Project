@@ -33,7 +33,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // Define additional gates if needed
         Gate::define('manage-rbac', function (User $user) {
-            return $user->hasRole(['super_admin', 'admin']);
+            return $user->hasAnyRole(['super_admin', 'admin']);
         });
 
         Gate::define('manage-users', function (User $user) {

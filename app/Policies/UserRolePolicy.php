@@ -34,7 +34,7 @@ class UserRolePolicy
         }
 
         // Admin can assign roles to non-admin users
-        if ($user->hasRole('admin') && !$targetUser->hasRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin') && !$targetUser->hasAnyRole(['admin', 'super_admin'])) {
             return $user->hasPermission('user_roles.assign');
         }
 
@@ -53,7 +53,7 @@ class UserRolePolicy
         }
 
         // Admin can remove roles from non-admin users
-        if ($user->hasRole('admin') && !$targetUser->hasRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin') && !$targetUser->hasAnyRole(['admin', 'super_admin'])) {
             return $user->hasPermission('user_roles.remove');
         }
 

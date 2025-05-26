@@ -29,17 +29,18 @@ class PermissionRequest extends FormRequest
     public function rules(): array
     {
         $permissionId = $this->route('permission') ? $this->route('permission')->id : null;
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
 
         return [
             'name' => [
-                'required',
+                $isUpdate ? 'sometimes' : 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9-_]+$/', // Only lowercase, numbers, hyphens, underscores
+                'regex:/^[a-z0-9._-]+$/', // Only lowercase, numbers, dots, hyphens, underscores
                 Rule::unique('idnbi_permissions', 'name')->ignore($permissionId),
             ],
             'display_name' => [
-                'required',
+                $isUpdate ? 'sometimes' : 'required',
                 'string',
                 'max:255',
             ],
@@ -47,6 +48,11 @@ class PermissionRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:1000',
+            ],
+            'group' => [
+                $isUpdate ? 'sometimes' : 'required',
+                'string',
+                'max:100',
             ],
         ];
     }
@@ -62,6 +68,7 @@ class PermissionRequest extends FormRequest
             'name' => 'permission name',
             'display_name' => 'display name',
             'description' => 'description',
+            'group' => 'group',
         ];
     }
 
@@ -73,7 +80,7 @@ class PermissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.regex' => 'The permission name may only contain lowercase letters, numbers, hyphens, and underscores.',
+            'name.regex' => 'The permission name may only contain lowercase letters, numbers, dots, hyphens, and underscores.',
             'name.unique' => 'A permission with this name already exists.',
         ];
     }

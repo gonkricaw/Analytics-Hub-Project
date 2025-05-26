@@ -82,27 +82,39 @@ class UserRoleControllerTest extends TestCase
         $response = $this->getJson('/api/admin/user-roles');
 
         $response->assertStatus(403);
-    }
-
-    #[Test]
+    }    #[Test]
     public function super_admin_can_get_specific_user_roles()
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->getJson("/api/admin/user-roles/{$this->adminUser->id}/roles");
-
-        $response->assertStatus(200)
+        $response = $this->getJson("/api/admin/user-roles/users/{$this->adminUser->id}");        $response->assertStatus(200)
             ->assertJsonStructure([
+                'success',
                 'data' => [
-                    '*' => [
+                    'user' => [
                         'id',
                         'name',
-                        'display_name',
-                        'description',
-                        'color',
-                        'is_system'
+                        'email'
+                    ],
+                    'roles' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'display_name',
+                            'description',
+                            'color',
+                            'is_system'
+                        ]
+                    ],
+                    'permissions' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'display_name'
+                        ]
                     ]
-                ]
+                ],
+                'message'
             ]);
     }
 
@@ -113,7 +125,7 @@ class UserRoleControllerTest extends TestCase
 
         $managerRole = Role::where('name', 'manager')->first();
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => $managerRole->id
         ]);
 
@@ -132,7 +144,7 @@ class UserRoleControllerTest extends TestCase
 
         $analystRole = Role::where('name', 'analyst')->first();
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => $analystRole->id
         ]);
 
@@ -147,7 +159,7 @@ class UserRoleControllerTest extends TestCase
 
         $superAdminRole = Role::where('name', 'super_admin')->first();
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => $superAdminRole->id
         ]);
 
@@ -161,7 +173,7 @@ class UserRoleControllerTest extends TestCase
 
         $adminRole = Role::where('name', 'admin')->first();
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => $adminRole->id
         ]);
 
@@ -173,7 +185,7 @@ class UserRoleControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", []);
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['role_id']);
@@ -184,7 +196,7 @@ class UserRoleControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => 99999
         ]);
 
@@ -203,7 +215,7 @@ class UserRoleControllerTest extends TestCase
         $this->testUser->roles()->attach($managerRole);
 
         // Second assignment should fail gracefully
-        $response = $this->postJson("/api/admin/user-roles/{$this->testUser->id}/assign", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/roles", [
             'role_id' => $managerRole->id
         ]);
 
@@ -221,9 +233,7 @@ class UserRoleControllerTest extends TestCase
         $managerRole = Role::where('name', 'manager')->first();
         $this->testUser->roles()->attach($managerRole);
 
-        $response = $this->deleteJson("/api/admin/user-roles/{$this->testUser->id}/remove", [
-            'role_id' => $managerRole->id
-        ]);
+        $response = $this->deleteJson("/api/admin/user-roles/users/{$this->testUser->id}/roles/{$managerRole->id}");
 
         $response->assertStatus(200)
             ->assertJsonFragment([
@@ -241,9 +251,7 @@ class UserRoleControllerTest extends TestCase
         $analystRole = Role::where('name', 'analyst')->first();
         $this->testUser->roles()->attach($analystRole);
 
-        $response = $this->deleteJson("/api/admin/user-roles/{$this->testUser->id}/remove", [
-            'role_id' => $analystRole->id
-        ]);
+        $response = $this->deleteJson("/api/admin/user-roles/users/{$this->testUser->id}/roles/{$analystRole->id}");
 
         $response->assertStatus(200);
         $this->assertFalse($this->testUser->fresh()->hasRole('analyst'));
@@ -256,9 +264,7 @@ class UserRoleControllerTest extends TestCase
 
         $adminRole = Role::where('name', 'admin')->first();
 
-        $response = $this->deleteJson("/api/admin/user-roles/{$this->superAdminUser->id}/remove", [
-            'role_id' => $adminRole->id
-        ]);
+        $response = $this->deleteJson("/api/admin/user-roles/users/{$this->superAdminUser->id}/roles/{$adminRole->id}");
 
         $response->assertStatus(403);
     }
@@ -270,9 +276,7 @@ class UserRoleControllerTest extends TestCase
 
         $managerRole = Role::where('name', 'manager')->first();
 
-        $response = $this->deleteJson("/api/admin/user-roles/{$this->testUser->id}/remove", [
-            'role_id' => $managerRole->id
-        ]);
+        $response = $this->deleteJson("/api/admin/user-roles/users/{$this->testUser->id}/roles/{$managerRole->id}");
 
         $response->assertStatus(400)
             ->assertJsonFragment([
@@ -288,13 +292,13 @@ class UserRoleControllerTest extends TestCase
         $roles = Role::whereIn('name', ['manager', 'analyst'])->get();
         $roleIds = $roles->pluck('id')->toArray();
 
-        $response = $this->putJson("/api/admin/user-roles/{$this->testUser->id}/sync", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/sync-roles", [
             'role_ids' => $roleIds
         ]);
 
         $response->assertStatus(200)
             ->assertJsonFragment([
-                'message' => 'User roles synchronized successfully'
+                'message' => 'User roles updated successfully'
             ]);
 
         $this->assertTrue($this->testUser->fresh()->hasRole('manager'));
@@ -310,7 +314,7 @@ class UserRoleControllerTest extends TestCase
         $superAdminRole = Role::where('name', 'super_admin')->first();
         $adminRole = Role::where('name', 'admin')->first();
 
-        $response = $this->putJson("/api/admin/user-roles/{$this->testUser->id}/sync", [
+        $response = $this->postJson("/api/admin/user-roles/users/{$this->testUser->id}/sync-roles", [
             'role_ids' => [$superAdminRole->id, $adminRole->id]
         ]);
 
@@ -342,7 +346,7 @@ class UserRoleControllerTest extends TestCase
 
         $adminRole = Role::where('name', 'admin')->first();
 
-        $response = $this->getJson("/api/admin/user-roles?role={$adminRole->id}");
+        $response = $this->getJson("/api/admin/user-roles?role_id={$adminRole->id}");
 
         $response->assertStatus(200);
 
@@ -379,7 +383,7 @@ class UserRoleControllerTest extends TestCase
     {
         Sanctum::actingAs($this->superAdminUser);
 
-        $response = $this->getJson('/api/admin/user-roles/99999/roles');
+        $response = $this->getJson('/api/admin/user-roles/users/99999');
 
         $response->assertStatus(404);
     }

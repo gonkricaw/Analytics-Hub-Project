@@ -32,16 +32,21 @@ class RoleController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Role::with('permissions');
+            $query = Role::withCount(['permissions', 'users']);
 
             // Search functionality
             if ($request->has('search') && !empty($request->search)) {
                 $searchTerm = $request->search;
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'ILIKE', "%{$searchTerm}%")
-                      ->orWhere('display_name', 'ILIKE', "%{$searchTerm}%")
-                      ->orWhere('description', 'ILIKE', "%{$searchTerm}%");
+                    $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($searchTerm) . '%'])
+                      ->orWhereRaw('LOWER(display_name) LIKE ?', ['%' . strtolower($searchTerm) . '%'])
+                      ->orWhereRaw('LOWER(description) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
                 });
+            }
+
+            // System role filter
+            if ($request->has('is_system') && $request->is_system !== null) {
+                $query->where('is_system', filter_var($request->is_system, FILTER_VALIDATE_BOOLEAN));
             }
 
             // Sorting
@@ -57,11 +62,7 @@ class RoleController extends Controller
             $perPage = $request->get('per_page', 15);
             $roles = $query->paginate($perPage);
 
-            return response()->json([
-                'success' => true,
-                'data' => $roles,
-                'message' => 'Roles retrieved successfully'
-            ]);
+            return response()->json($roles);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -86,6 +87,11 @@ class RoleController extends Controller
             
             // Remove permission_ids from validated data for role creation
             unset($validated['permission_ids']);
+            
+            // Set default for is_system if not provided
+            if (!isset($validated['is_system'])) {
+                $validated['is_system'] = false;
+            }
 
             $role = Role::create($validated);
 
@@ -122,11 +128,7 @@ class RoleController extends Controller
         try {
             $role->load(['permissions', 'users']);
 
-            return response()->json([
-                'success' => true,
-                'data' => $role,
-                'message' => 'Role retrieved successfully'
-            ]);
+            return response()->json($role);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -226,6 +228,24 @@ class RoleController extends Controller
                 'permission_ids' => 'required|array',
                 'permission_ids.*' => 'exists:idnbi_permissions,id',
             ]);
+
+            // Check if user is trying to assign super admin permissions
+            $superAdminPermissions = [
+                'permissions.create',
+                'permissions.delete', 
+                'roles.create'
+            ];
+            
+            $requestedPermissions = Permission::whereIn('id', $request->permission_ids)->get();
+            $restrictedPermissions = $requestedPermissions->whereIn('name', $superAdminPermissions);
+            
+            // If non-super-admin tries to assign restricted permissions, deny
+            if ($restrictedPermissions->isNotEmpty() && !auth()->user()->hasRole('super_admin')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient permissions to assign super admin permissions'
+                ], 403);
+            }
 
             $role->permissions()->sync($request->permission_ids);
             $role->load('permissions');

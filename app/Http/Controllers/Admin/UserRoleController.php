@@ -67,6 +67,20 @@ class UserRoleController extends Controller
         $this->authorize('syncRoles', [User::class, $user]);
 
         try {
+            // Check for restricted roles if user is not super admin
+            if (!auth()->user()->hasRole('super_admin')) {
+                $restrictedRoles = Role::whereIn('id', $request->role_ids)
+                    ->whereIn('name', ['super_admin', 'admin'])
+                    ->exists();
+                    
+                if ($restrictedRoles) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Insufficient permissions to assign restricted roles'
+                    ], 403);
+                }
+            }
+            
             $user->roles()->sync($request->role_ids);
             $user->load('roles.permissions');
 
@@ -104,6 +118,24 @@ class UserRoleController extends Controller
         ]);
 
         try {
+            $role = Role::findOrFail($request->role_id);
+            
+            // Check if user already has this role
+            if ($user->roles()->where('idnbi_roles.id', $role->id)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User already has this role'
+                ], 400);
+            }
+            
+            // Check authorization for restricted roles
+            if (in_array($role->name, ['super_admin', 'admin']) && !auth()->user()->hasRole('super_admin')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient permissions to assign this role'
+                ], 403);
+            }
+
             $user->roles()->attach($request->role_id);
             $user->load('roles.permissions');
 
@@ -132,11 +164,19 @@ class UserRoleController extends Controller
      * @param Role $role
      * @return JsonResponse
      */
-    public function removeRole(User $user, $role): JsonResponse
+    public function removeRole(User $user, Role $role): JsonResponse
     {
         $this->authorize('removeRole', [User::class, $user]);
 
         try {
+            // Check if user has this role
+            if (!$user->roles()->where('idnbi_roles.id', $role->id)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User does not have this role'
+                ], 400);
+            }
+            
             $user->roles()->detach($role);
             $user->load('roles.permissions');
 
@@ -200,11 +240,7 @@ class UserRoleController extends Controller
             $perPage = $request->get('per_page', 15);
             $users = $query->paginate($perPage);
 
-            return response()->json([
-                'success' => true,
-                'data' => $users,
-                'message' => 'Users with roles retrieved successfully'
-            ]);
+            return response()->json($users);
 
         } catch (\Exception $e) {
             return response()->json([
