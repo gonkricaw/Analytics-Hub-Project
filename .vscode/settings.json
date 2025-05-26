@@ -92,5 +92,6 @@
         "borderStyle": "solid"
       }
     ]
-  }
+  },
+  "github.copilot.chat.codesearch.enabled": true
 }

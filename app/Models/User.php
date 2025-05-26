@@ -150,6 +150,81 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the notifications created by this user.
+     */
+    public function createdNotifications()
+    {
+        return $this->hasMany(Notification::class, 'created_by_user_id');
+    }
+
+    /**
+     * Get the notifications for this user through the pivot table.
+     */
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'idnbi_user_notifications', 'user_id', 'notification_id')
+                    ->withPivot('read_at')
+                    ->withTimestamps()
+                    ->orderBy('idnbi_notifications.created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications for this user.
+     */
+    public function unreadNotifications(): BelongsToMany
+    {
+        return $this->notifications()->wherePivot('read_at', null);
+    }
+
+    /**
+     * Get read notifications for this user.
+     */
+    public function readNotifications(): BelongsToMany
+    {
+        return $this->notifications()->whereNotNull('idnbi_user_notifications.read_at');
+    }
+
+    /**
+     * Get the email templates created by this user.
+     */
+    public function createdEmailTemplates()
+    {
+        return $this->hasMany(EmailTemplate::class, 'created_by_user_id');
+    }
+
+    /**
+     * Mark a notification as read for this user.
+     */
+    public function markNotificationAsRead(int $notificationId): bool
+    {
+        return $this->notifications()
+                    ->wherePivot('notification_id', $notificationId)
+                    ->wherePivot('read_at', null)
+                    ->updateExistingPivot($notificationId, ['read_at' => now()]) > 0;
+    }
+
+    /**
+     * Mark all notifications as read for this user.
+     */
+    public function markAllNotificationsAsRead(): bool
+    {
+        return $this->notifications()
+                    ->wherePivot('read_at', null)
+                    ->get()
+                    ->each(function ($notification) {
+                        $this->markNotificationAsRead($notification->id);
+                    });
+    }
+
+    /**
+     * Get count of unread notifications for this user.
+     */
+    public function getUnreadNotificationsCountAttribute(): int
+    {
+        return $this->unreadNotifications()->count();
+    }
+
+    /**
      * Get the roles that belong to this user.
      */
     public function roles(): BelongsToMany

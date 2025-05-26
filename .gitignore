@@ -42,12 +42,7 @@ dist-ssr
 # 👉 Custom Git ignores
 
 # Editor directories and files
-.vscode
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/*.code-snippets
-!.vscode/tours
+*/.vscode
 .idea
 *.suo
 *.ntvs*
