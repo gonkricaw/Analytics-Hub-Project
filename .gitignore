@@ -20,6 +20,7 @@ yarn-error.log
 /.idea
 /.nova
 /.zed
+/.vscode
 
 # Logs
 logs
@@ -42,7 +43,6 @@ dist-ssr
 # 👉 Custom Git ignores
 
 # Editor directories and files
-*/.vscode
 .idea
 *.suo
 *.ntvs*
