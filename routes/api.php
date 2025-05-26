@@ -15,6 +15,8 @@ use App\Http\Controllers\Admin\MenuController as AdminMenuController;
 use App\Http\Controllers\Admin\ContentController as AdminContentController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Api\UserNotificationController;
+use App\Http\Controllers\Admin\EmailTemplateController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +45,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/change-password', [AuthController::class, 'changePassword']);
     Route::post('/accept-terms', [AuthController::class, 'acceptTerms']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+
+    // Dashboard
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardController::class, 'index']);
+        Route::post('/jumbotron', [DashboardController::class, 'updateJumbotron']);
+        Route::post('/marquee', [DashboardController::class, 'updateMarquee']);
+    });
 
     // Admin routes - User Invitations
     Route::prefix('admin')->group(function () {
@@ -140,6 +149,20 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{notification}', [NotificationController::class, 'update']);
             Route::delete('/{notification}', [NotificationController::class, 'destroy']);
             Route::post('/{notification}/resend', [NotificationController::class, 'resend']);
+        });
+
+        // Email Template Management
+        Route::prefix('email-templates')->group(function () {
+            Route::get('/', [EmailTemplateController::class, 'index']);
+            Route::post('/', [EmailTemplateController::class, 'store']);
+            Route::get('/types', [EmailTemplateController::class, 'types']);
+            Route::post('/create-defaults', [EmailTemplateController::class, 'createDefaults']);
+            Route::get('/{emailTemplate}', [EmailTemplateController::class, 'show']);
+            Route::put('/{emailTemplate}', [EmailTemplateController::class, 'update']);
+            Route::delete('/{emailTemplate}', [EmailTemplateController::class, 'destroy']);
+            Route::post('/{emailTemplate}/preview', [EmailTemplateController::class, 'preview']);
+            Route::post('/{emailTemplate}/clone', [EmailTemplateController::class, 'clone']);
+            Route::post('/{emailTemplate}/toggle-status', [EmailTemplateController::class, 'toggleStatus']);
         });
     });
 

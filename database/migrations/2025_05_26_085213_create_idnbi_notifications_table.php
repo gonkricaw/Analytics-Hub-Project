@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
-            $table->foreignId('created_by_user_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('created_by_user_id');
             $table->timestamps();
+            
+            // Foreign key constraints
+            $table->foreign('created_by_user_id')->references('id')->on('idnbi_users')->onDelete('cascade');
             
             // Indexes for performance
             $table->index('created_by_user_id');

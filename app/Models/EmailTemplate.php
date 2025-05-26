@@ -43,7 +43,11 @@ class EmailTemplate extends Model
     protected $fillable = [
         'name',
         'subject',
-        'body',
+        'html_content',
+        'text_content',
+        'description',
+        'placeholders',
+        'is_active',
         'created_by_user_id',
         'type',
     ];
@@ -56,6 +60,8 @@ class EmailTemplate extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'placeholders' => 'array',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -91,6 +97,16 @@ class EmailTemplate extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Alias for creator relationship for consistency
+     *
+     * @return BelongsTo
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->creator();
     }
 
     /**
@@ -149,7 +165,8 @@ class EmailTemplate extends Model
     public function compile(array $variables = []): array
     {
         $subject = $this->subject;
-        $body = $this->body;
+        $htmlContent = $this->html_content;
+        $textContent = $this->text_content;
 
         // Replace common placeholders
         $defaultVariables = [
@@ -163,12 +180,16 @@ class EmailTemplate extends Model
 
         foreach ($allVariables as $placeholder => $value) {
             $subject = str_replace($placeholder, $value, $subject);
-            $body = str_replace($placeholder, $value, $body);
+            $htmlContent = str_replace($placeholder, $value, $htmlContent);
+            if ($textContent) {
+                $textContent = str_replace($placeholder, $value, $textContent);
+            }
         }
 
         return [
             'subject' => $subject,
-            'body' => $body,
+            'html_content' => $htmlContent,
+            'text_content' => $textContent,
         ];
     }
 
@@ -196,27 +217,32 @@ class EmailTemplate extends Model
             self::TYPE_INVITATION => [
                 'name' => 'Default User Invitation',
                 'subject' => 'You\'re invited to join {{app_name}}',
-                'body' => 'Hello {{name}},\n\nYou have been invited to join {{app_name}}.\n\nPlease click the following link to accept the invitation:\n{{invitation_url}}\n\nBest regards,\n{{app_name}} Team',
+                'html_content' => '<h2>Welcome!</h2><p>Hello {{user_name}},</p><p>You have been invited to join {{app_name}}.</p><p>Please click <a href="{{invitation_url}}">here</a> to accept the invitation.</p>',
+                'text_content' => 'Hello {{user_name}},\n\nYou have been invited to join {{app_name}}.\n\nPlease click the following link to accept the invitation:\n{{invitation_url}}\n\nBest regards,\n{{app_name}} Team',
             ],
             self::TYPE_PASSWORD_RESET => [
                 'name' => 'Default Password Reset',
                 'subject' => 'Reset Your {{app_name}} Password',
-                'body' => 'Hello {{name}},\n\nYou are receiving this email because we received a password reset request for your account.\n\nPlease click the following link to reset your password:\n{{reset_url}}\n\nIf you did not request a password reset, no further action is required.\n\nBest regards,\n{{app_name}} Team',
+                'html_content' => '<h2>Password Reset</h2><p>Hello {{user_name}},</p><p>You are receiving this email because we received a password reset request for your account.</p><p><a href="{{reset_url}}">Reset Password</a></p>',
+                'text_content' => 'Hello {{user_name}},\n\nYou are receiving this email because we received a password reset request for your account.\n\nPlease click the following link to reset your password:\n{{reset_url}}\n\nIf you did not request a password reset, no further action is required.\n\nBest regards,\n{{app_name}} Team',
             ],
             self::TYPE_WELCOME => [
                 'name' => 'Default Welcome Message',
                 'subject' => 'Welcome to {{app_name}}!',
-                'body' => 'Hello {{name}},\n\nWelcome to {{app_name}}! We\'re excited to have you on board.\n\nYou can access your dashboard at: {{app_url}}\n\nIf you have any questions, please don\'t hesitate to contact us.\n\nBest regards,\n{{app_name}} Team',
+                'html_content' => '<h2>Welcome!</h2><p>Hello {{user_name}},</p><p>Welcome to {{app_name}}! We\'re excited to have you on board.</p><p><a href="{{app_url}}">Visit Dashboard</a></p>',
+                'text_content' => 'Hello {{user_name}},\n\nWelcome to {{app_name}}! We\'re excited to have you on board.\n\nYou can access your dashboard at: {{app_url}}\n\nIf you have any questions, please don\'t hesitate to contact us.\n\nBest regards,\n{{app_name}} Team',
             ],
             self::TYPE_NOTIFICATION => [
                 'name' => 'Default Notification',
                 'subject' => 'New Notification from {{app_name}}',
-                'body' => 'Hello {{name}},\n\nYou have a new notification:\n\n{{notification_title}}\n{{notification_content}}\n\nYou can view all your notifications at: {{app_url}}/notifications\n\nBest regards,\n{{app_name}} Team',
+                'html_content' => '<h2>{{notification_title}}</h2><p>Hello {{user_name}},</p><p>You have a new notification:</p><div>{{notification_content}}</div>',
+                'text_content' => 'Hello {{user_name}},\n\nYou have a new notification:\n\n{{notification_title}}\n{{notification_content}}\n\nYou can view all your notifications at: {{app_url}}/notifications\n\nBest regards,\n{{app_name}} Team',
             ],
             self::TYPE_GENERAL => [
                 'name' => 'Default General Template',
                 'subject' => 'Message from {{app_name}}',
-                'body' => 'Hello {{name}},\n\n{{message}}\n\nBest regards,\n{{app_name}} Team',
+                'html_content' => '<p>Hello {{user_name}},</p><p>{{message}}</p><p>Best regards,<br>{{app_name}} Team</p>',
+                'text_content' => 'Hello {{user_name}},\n\n{{message}}\n\nBest regards,\n{{app_name}} Team',
             ],
         ];
 
@@ -225,7 +251,8 @@ class EmailTemplate extends Model
         return static::create([
             'name' => $template['name'],
             'subject' => $template['subject'],
-            'body' => $template['body'],
+            'html_content' => $template['html_content'],
+            'text_content' => $template['text_content'],
             'type' => $type,
             'created_by_user_id' => $createdByUserId,
         ]);
@@ -238,7 +265,7 @@ class EmailTemplate extends Model
      */
     public function getPlaceholders(): array
     {
-        $content = $this->subject . ' ' . $this->body;
+        $content = $this->subject . ' ' . $this->html_content . ' ' . ($this->text_content ?? '');
         preg_match_all('/\{\{([^}]+)\}\}/', $content, $matches);
         
         return array_unique($matches[1]);
@@ -282,5 +309,44 @@ class EmailTemplate extends Model
             'total' => $total,
             'by_type' => $byType,
         ];
+    }
+
+    /**
+     * Extract placeholders from content.
+     *
+     * @param string $content
+     * @return array
+     */
+    public static function extractPlaceholders(string $content): array
+    {
+        preg_match_all('/\{\{([^}]+)\}\}/', $content, $matches);
+        return array_unique($matches[1]);
+    }
+
+    /**
+     * Compile template with data.
+     *
+     * This method replaces placeholders in the given template string with corresponding values
+     * from the provided data array. Placeholders are expected to be in the format {{key}}.
+     * If a placeholder in the template does not have a corresponding key in the data array,
+     * it will remain unchanged in the resulting string.
+     *
+     * Example:
+     * Template: "Hello {{name}}, welcome to {{app_name}}!"
+     * Data: ['name' => 'John', 'app_name' => 'Analytics Hub']
+     * Result: "Hello John, welcome to Analytics Hub!"
+     *
+     * @param string $template The template string containing placeholders.
+     * @param array $data An associative array where keys correspond to placeholders in the template.
+     * @return string The compiled template with placeholders replaced by their corresponding values.
+     */
+    public function compileTemplate(string $template, array $data): string
+    {
+        foreach ($data as $key => $value) {
+            $placeholder = '{{' . $key . '}}';
+            $template = str_replace($placeholder, $value, $template);
+        }
+        
+        return $template;
     }
 }
