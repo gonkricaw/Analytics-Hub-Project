@@ -35,7 +35,7 @@ export function useErrorHandler() {
     return errorObj.id
   }
   
-  const removeError = (id) => {
+  const removeError = id => {
     const index = globalErrors.value.findIndex(error => error.id === id)
     if (index > -1) {
       globalErrors.value.splice(index, 1)
@@ -93,6 +93,7 @@ export function useErrorHandler() {
   
   const handleValidationError = (errors, context = {}) => {
     const message = 'Validation failed'
+
     const errorObj = {
       message,
       name: 'ValidationError',
@@ -129,12 +130,12 @@ export function setupGlobalErrorHandler() {
   const { addError } = useErrorHandler()
   
   // Handle unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     addError(event.reason, { type: 'unhandledPromise' })
   })
   
   // Handle uncaught errors
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     addError(event.error || new Error(event.message), {
       type: 'uncaughtError',
       filename: event.filename,

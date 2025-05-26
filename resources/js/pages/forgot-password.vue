@@ -33,7 +33,8 @@ const emailSent = ref(false)
 
 // Form validation
 const isFormValid = computed(() => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
+  
   return form.value.email && emailRegex.test(form.value.email)
 })
 
@@ -132,7 +133,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               class="mb-4"
             >
               <div class="d-flex align-center">
-                <VIcon icon="tabler-circle-check" class="me-2" />
+                <VIcon
+                  icon="tabler-circle-check"
+                  class="me-2"
+                />
                 <div>
                   <div class="text-body-1 font-weight-medium mb-1">
                     Email Sent Successfully!

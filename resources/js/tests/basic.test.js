@@ -7,6 +7,7 @@ describe('Basic Test', () => {
 
   it('should handle async operations', async () => {
     const result = await Promise.resolve('hello')
+
     expect(result).toBe('hello')
   })
 })

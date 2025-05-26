@@ -3,8 +3,12 @@
     <!-- Page Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
       <div>
-        <h4 class="mb-1">User Role Management</h4>
-        <p class="text-muted">Assign and manage user roles and permissions</p>
+        <h4 class="mb-1">
+          User Role Management
+        </h4>
+        <p class="text-muted">
+          Assign and manage user roles and permissions
+        </p>
       </div>
     </div>
 
@@ -12,7 +16,10 @@
     <VCard class="mb-4">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="4">
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VTextField
               v-model="searchQuery"
               placeholder="Search users..."
@@ -21,7 +28,10 @@
               @input="handleSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="selectedRoleFilter"
               :items="roleFilterOptions"
@@ -30,7 +40,10 @@
               @update:model-value="loadUsers"
             />
           </VCol>
-          <VCol cols="12" md="2">
+          <VCol
+            cols="12"
+            md="2"
+          >
             <VSelect
               v-model="perPage"
               :items="perPageOptions"
@@ -38,7 +51,10 @@
               @update:model-value="loadUsers"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VBtn
               color="secondary"
               variant="outlined"
@@ -123,7 +139,10 @@
             <span v-if="item.last_active_at">
               {{ formatDate(item.last_active_at) }}
             </span>
-            <span v-else class="text-muted">Never</span>
+            <span
+              v-else
+              class="text-muted"
+            >Never</span>
           </template>
 
           <!-- Actions -->
@@ -137,7 +156,9 @@
                 @click="viewUserRoles(item)"
               >
                 <VIcon icon="tabler-eye" />
-                <VTooltip activator="parent">View Details</VTooltip>
+                <VTooltip activator="parent">
+                  View Details
+                </VTooltip>
               </VBtn>
               <VBtn
                 icon
@@ -147,7 +168,9 @@
                 @click="manageUserRoles(item)"
               >
                 <VIcon icon="tabler-settings" />
-                <VTooltip activator="parent">Manage Roles</VTooltip>
+                <VTooltip activator="parent">
+                  Manage Roles
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -168,7 +191,9 @@
 
         <VCardText>
           <div class="mb-4">
-            <h6 class="text-h6 mb-3">Current Roles</h6>
+            <h6 class="text-h6 mb-3">
+              Current Roles
+            </h6>
             <div class="d-flex flex-wrap gap-2">
               <VChip
                 v-for="role in selectedUser.roles"
@@ -193,7 +218,9 @@
           <VDivider class="my-4" />
 
           <div>
-            <h6 class="text-h6 mb-3">Available Roles</h6>
+            <h6 class="text-h6 mb-3">
+              Available Roles
+            </h6>
             <VSelect
               v-model="roleToAssign"
               :items="availableRoles"
@@ -205,14 +232,20 @@
             />
           </div>
 
-          <div v-if="roleToAssign" class="mt-4">
+          <div
+            v-if="roleToAssign"
+            class="mt-4"
+          >
             <VAlert
               type="info"
               variant="tonal"
               class="mb-0"
             >
               <div class="d-flex align-center">
-                <VIcon icon="tabler-info-circle" class="me-2" />
+                <VIcon
+                  icon="tabler-info-circle"
+                  class="me-2"
+                />
                 <div>
                   <strong>{{ selectedRoleInfo?.display_name }}</strong>
                   <br>
@@ -260,7 +293,10 @@
 
         <VCardText>
           <VRow>
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VList>
                 <VListItem>
                   <VListItemTitle>Name</VListItemTitle>
@@ -294,9 +330,14 @@
                 </VListItem>
               </VList>
             </VCol>
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <div class="mb-4">
-                <h6 class="text-h6 mb-3">Assigned Roles</h6>
+                <h6 class="text-h6 mb-3">
+                  Assigned Roles
+                </h6>
                 <div class="d-flex flex-column gap-2">
                   <VCard
                     v-for="role in selectedUser.roles"
@@ -306,7 +347,9 @@
                   >
                     <div class="d-flex justify-space-between align-center">
                       <div>
-                        <div class="font-weight-medium">{{ role.display_name }}</div>
+                        <div class="font-weight-medium">
+                          {{ role.display_name }}
+                        </div>
                         <small class="text-muted">{{ role.description }}</small>
                       </div>
                       <VChip
@@ -318,7 +361,10 @@
                       </VChip>
                     </div>
                   </VCard>
-                  <div v-if="!selectedUser.roles.length" class="text-center text-muted py-4">
+                  <div
+                    v-if="!selectedUser.roles.length"
+                    class="text-center text-muted py-4"
+                  >
                     No roles assigned
                   </div>
                 </div>
@@ -329,7 +375,9 @@
           <VDivider class="my-4" />
 
           <div v-if="userPermissions.length">
-            <h6 class="text-h6 mb-3">All Permissions ({{ userPermissions.length }})</h6>
+            <h6 class="text-h6 mb-3">
+              All Permissions ({{ userPermissions.length }})
+            </h6>
             <div class="d-flex flex-wrap gap-2">
               <VChip
                 v-for="permission in userPermissions"
@@ -389,7 +437,7 @@ const headers = [
   { title: 'Current Roles', key: 'roles', sortable: false },
   { title: 'Status', key: 'status', sortable: true },
   { title: 'Last Active', key: 'last_active_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false, width: 100 }
+  { title: 'Actions', key: 'actions', sortable: false, width: 100 },
 ]
 
 const perPageOptions = [10, 15, 25, 50, 100]
@@ -398,7 +446,7 @@ const perPageOptions = [10, 15, 25, 50, 100]
 const roleFilterOptions = computed(() => {
   return roles.value.map(role => ({
     title: role.display_name,
-    value: role.id
+    value: role.id,
   }))
 })
 
@@ -406,6 +454,7 @@ const availableRoles = computed(() => {
   if (!selectedUser.value) return roles.value
   
   const userRoleIds = selectedUser.value.roles.map(role => role.id)
+  
   return roles.value.filter(role => !userRoleIds.includes(role.id))
 })
 
@@ -434,7 +483,7 @@ const loadUsers = async () => {
     const params = {
       page: currentPage.value,
       per_page: perPage.value,
-      search: searchQuery.value
+      search: searchQuery.value,
     }
 
     if (selectedRoleFilter.value) {
@@ -458,7 +507,7 @@ const loadUsers = async () => {
 const loadRoles = async () => {
   try {
     const response = await api.get('/admin/roles', {
-      params: { per_page: 1000 }
+      params: { per_page: 1000 },
     })
     
     if (response.data.success) {
@@ -469,7 +518,7 @@ const loadRoles = async () => {
   }
 }
 
-const handleTableUpdate = (options) => {
+const handleTableUpdate = options => {
   currentPage.value = options.page
   perPage.value = options.itemsPerPage
   loadUsers()
@@ -488,7 +537,7 @@ const resetFilters = () => {
   loadUsers()
 }
 
-const viewUserRoles = async (user) => {
+const viewUserRoles = async user => {
   try {
     const response = await api.get(`/admin/user-roles/users/${user.id}`)
     if (response.data.success) {
@@ -500,7 +549,7 @@ const viewUserRoles = async (user) => {
   }
 }
 
-const manageUserRoles = async (user) => {
+const manageUserRoles = async user => {
   try {
     const response = await api.get(`/admin/user-roles/users/${user.id}`)
     if (response.data.success) {
@@ -519,7 +568,7 @@ const assignUserRole = async () => {
   assigning.value = true
   try {
     const response = await api.post(`/admin/user-roles/users/${selectedUser.value.id}/roles`, {
-      role_id: roleToAssign.value
+      role_id: roleToAssign.value,
     })
 
     if (response.data.success) {
@@ -527,6 +576,7 @@ const assignUserRole = async () => {
       
       // Update the selected user with new role
       const newRole = roles.value.find(role => role.id === roleToAssign.value)
+
       selectedUser.value.roles.push(newRole)
       
       // Update the users list
@@ -545,7 +595,7 @@ const assignUserRole = async () => {
   }
 }
 
-const removeUserRole = async (role) => {
+const removeUserRole = async role => {
   if (!confirm(`Remove role "${role.display_name}" from ${selectedUser.value.name}?`)) {
     return
   }
@@ -578,35 +628,37 @@ const closeManageDialog = () => {
 }
 
 // Helper functions
-const getInitials = (name) => {
+const getInitials = name => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
-const getAvatarColor = (name) => {
+const getAvatarColor = name => {
   const colors = ['primary', 'secondary', 'success', 'info', 'warning', 'error']
   const index = name.length % colors.length
+  
   return colors[index]
 }
 
-const getRoleColor = (roleName) => {
+const getRoleColor = roleName => {
   const roleColors = {
     super_admin: 'error',
     admin: 'warning',
     manager: 'info',
     analyst: 'success',
     viewer: 'secondary',
-    user: 'primary'
+    user: 'primary',
   }
+  
   return roleColors[roleName] || 'primary'
 }
 
-const formatDate = (date) => {
+const formatDate = date => {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock useAuth
 const mockLogout = vi.fn()
+
 vi.mock('@/composables/useAuth', () => ({
   useAuth: () => ({
     logout: mockLogout,
@@ -53,6 +54,7 @@ describe('useAutoLogout', () => {
     // Simulate user activity
     const addEventListenerCalls = document.addEventListener.mock.calls
     const mouseMoveHandler = addEventListenerCalls.find(call => call[0] === 'mousemove')[1]
+
     mouseMoveHandler()
 
     // Fast-forward another 13.33 minutes (should not logout yet)
@@ -84,6 +86,7 @@ describe('useAutoLogout', () => {
 
     // Get all the event handlers
     const addEventListenerCalls = document.addEventListener.mock.calls
+
     const handlers = {
       mousedown: addEventListenerCalls.find(call => call[0] === 'mousedown')[1],
       mousemove: addEventListenerCalls.find(call => call[0] === 'mousemove')[1],

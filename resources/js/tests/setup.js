@@ -23,6 +23,7 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 }
+
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 })
@@ -75,7 +76,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 
 // Configure Vue Test Utils
 config.global.mocks = {
-  $t: (key) => key,
+  $t: key => key,
   $route: {
     path: '/',
     params: {},

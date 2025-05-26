@@ -45,17 +45,18 @@ const fileInput = ref(null)
 
 // Password requirements
 const passwordRequirements = [
-  { text: 'At least 8 characters', test: (pwd) => pwd.length >= 8 },
-  { text: 'At least one uppercase letter', test: (pwd) => /[A-Z]/.test(pwd) },
-  { text: 'At least one lowercase letter', test: (pwd) => /[a-z]/.test(pwd) },
-  { text: 'At least one number', test: (pwd) => /\d/.test(pwd) },
-  { text: 'At least one special character', test: (pwd) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
+  { text: 'At least 8 characters', test: pwd => pwd.length >= 8 },
+  { text: 'At least one uppercase letter', test: pwd => /[A-Z]/.test(pwd) },
+  { text: 'At least one lowercase letter', test: pwd => /[a-z]/.test(pwd) },
+  { text: 'At least one number', test: pwd => /\d/.test(pwd) },
+  { text: 'At least one special character', test: pwd => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
 ]
 
 // Computed properties
 const passwordStrength = computed(() => {
   const password = passwordForm.value.password
   const passedRequirements = passwordRequirements.filter(req => req.test(password))
+  
   return passedRequirements.length
 })
 
@@ -76,7 +77,7 @@ const isPasswordFormValid = computed(() => {
 })
 
 // Watch for user changes
-watch(user, (newUser) => {
+watch(user, newUser => {
   if (newUser) {
     profileForm.value.name = newUser.name || ''
     profileForm.value.email = newUser.email || ''
@@ -85,18 +86,20 @@ watch(user, (newUser) => {
 }, { immediate: true })
 
 // Handle profile photo selection
-const handlePhotoSelection = (event) => {
+const handlePhotoSelection = event => {
   const file = event.target.files[0]
   if (file) {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       profileError.value = 'Please select a valid image file'
+      
       return
     }
     
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       profileError.value = 'Image size must be less than 2MB'
+      
       return
     }
     
@@ -104,7 +107,8 @@ const handlePhotoSelection = (event) => {
     
     // Create preview
     const reader = new FileReader()
-    reader.onload = (e) => {
+
+    reader.onload = e => {
       profilePhotoPreview.value = e.target.result
     }
     reader.readAsDataURL(file)
@@ -132,6 +136,7 @@ const handleUpdateProfile = async () => {
   
   try {
     const formData = new FormData()
+
     formData.append('name', profileForm.value.name)
     formData.append('email', profileForm.value.email)
     
@@ -143,6 +148,7 @@ const handleUpdateProfile = async () => {
     
     if (result.success) {
       profileMessage.value = 'Profile updated successfully!'
+
       // Reset photo file input
       profileForm.value.profile_photo = null
       if (fileInput.value) {
@@ -175,6 +181,7 @@ const handleChangePassword = async () => {
     
     if (result.success) {
       passwordMessage.value = 'Password changed successfully!'
+
       // Reset form
       passwordForm.value = {
         current_password: '',

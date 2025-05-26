@@ -373,6 +373,10 @@
     "useLazyImage": true,
     "useMemoryManagement": true,
     "usePerformance": true,
-    "useResourcePreloader": true
+    "useResourcePreloader": true,
+    "useContent": true,
+    "useContentStore": true,
+    "useMenu": true,
+    "useMenuStore": true
   }
 }

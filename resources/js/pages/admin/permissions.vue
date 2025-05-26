@@ -3,14 +3,21 @@
     <!-- Page Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
       <div>
-        <h4 class="mb-1">Permission Management</h4>
-        <p class="text-muted">Manage system permissions and access controls</p>
+        <h4 class="mb-1">
+          Permission Management
+        </h4>
+        <p class="text-muted">
+          Manage system permissions and access controls
+        </p>
       </div>
       <VBtn
         color="primary"
         @click="showCreateDialog = true"
       >
-        <VIcon icon="tabler-plus" class="me-2" />
+        <VIcon
+          icon="tabler-plus"
+          class="me-2"
+        />
         Add Permission
       </VBtn>
     </div>
@@ -19,7 +26,10 @@
     <VCard class="mb-4">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="searchQuery"
               placeholder="Search permissions..."
@@ -28,7 +38,10 @@
               @input="handleSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="perPage"
               :items="perPageOptions"
@@ -36,7 +49,10 @@
               @update:model-value="loadPermissions"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VBtn
               color="secondary"
               variant="outlined"
@@ -73,7 +89,10 @@
 
           <!-- Description -->
           <template #item.description="{ item }">
-            <span class="text-truncate" style="max-inline-size: 200px;">
+            <span
+              class="text-truncate"
+              style="max-inline-size: 200px;"
+            >
               {{ item.description }}
             </span>
           </template>
@@ -94,7 +113,9 @@
                 @click="viewPermission(item)"
               >
                 <VIcon icon="tabler-eye" />
-                <VTooltip activator="parent">View Details</VTooltip>
+                <VTooltip activator="parent">
+                  View Details
+                </VTooltip>
               </VBtn>
               <VBtn
                 icon
@@ -104,7 +125,9 @@
                 @click="editPermission(item)"
               >
                 <VIcon icon="tabler-edit" />
-                <VTooltip activator="parent">Edit Permission</VTooltip>
+                <VTooltip activator="parent">
+                  Edit Permission
+                </VTooltip>
               </VBtn>
               <VBtn
                 icon
@@ -114,7 +137,9 @@
                 @click="deletePermission(item)"
               >
                 <VIcon icon="tabler-trash" />
-                <VTooltip activator="parent">Delete Permission</VTooltip>
+                <VTooltip activator="parent">
+                  Delete Permission
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -136,7 +161,10 @@
         </VCardTitle>
 
         <VCardText>
-          <VForm ref="permissionForm" @submit.prevent="savePermission">
+          <VForm
+            ref="permissionForm"
+            @submit.prevent="savePermission"
+          >
             <VRow>
               <VCol cols="12">
                 <VTextField
@@ -266,7 +294,7 @@ const selectedPermission = ref(null)
 const permissionData = ref({
   name: '',
   display_name: '',
-  description: ''
+  description: '',
 })
 
 // Form reference
@@ -277,7 +305,7 @@ const headers = [
   { title: 'Permission', key: 'name', sortable: true },
   { title: 'Description', key: 'description', sortable: false },
   { title: 'Created', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false, width: 120 }
+  { title: 'Actions', key: 'actions', sortable: false, width: 120 },
 ]
 
 const perPageOptions = [10, 15, 25, 50, 100]
@@ -285,7 +313,7 @@ const perPageOptions = [10, 15, 25, 50, 100]
 // Validation rules
 const rules = {
   required: v => !!v || 'This field is required',
-  permissionName: v => /^[a-z_]+(\.[a-z_]+)*$/.test(v) || 'Permission name must use lowercase letters, underscores, and dots only'
+  permissionName: v => /^[a-z_]+(\.[a-z_]+)*$/.test(v) || 'Permission name must use lowercase letters, underscores, and dots only',
 }
 
 // Methods
@@ -295,7 +323,7 @@ const loadPermissions = async () => {
     const params = {
       page: currentPage.value,
       per_page: perPage.value,
-      search: searchQuery.value
+      search: searchQuery.value,
     }
 
     const response = await api.get('/admin/permissions', { params })
@@ -312,7 +340,7 @@ const loadPermissions = async () => {
   }
 }
 
-const handleTableUpdate = (options) => {
+const handleTableUpdate = options => {
   currentPage.value = options.page
   perPage.value = options.itemsPerPage
   loadPermissions()
@@ -330,17 +358,17 @@ const resetFilters = () => {
   loadPermissions()
 }
 
-const viewPermission = (permission) => {
+const viewPermission = permission => {
   selectedPermission.value = permission
   showViewDialog.value = true
 }
 
-const editPermission = (permission) => {
+const editPermission = permission => {
   editingPermission.value = permission
   permissionData.value = {
     name: permission.name,
     display_name: permission.display_name,
-    description: permission.description
+    description: permission.description,
   }
   showCreateDialog.value = true
 }
@@ -372,7 +400,7 @@ const savePermission = async () => {
   }
 }
 
-const deletePermission = async (permission) => {
+const deletePermission = async permission => {
   if (!confirm(`Are you sure you want to delete the permission "${permission.display_name}"?`)) {
     return
   }
@@ -396,20 +424,20 @@ const closeDialog = () => {
   permissionData.value = {
     name: '',
     display_name: '',
-    description: ''
+    description: '',
   }
   nextTick(() => {
     permissionForm.value?.resetValidation()
   })
 }
 
-const formatDate = (date) => {
+const formatDate = date => {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 

@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
         // Seed RBAC system first
         $this->call(RBACSeeder::class);
 
+        // Seed menu and content data
+        $this->call(MenuContentSeeder::class);
+
         // Create additional test users if needed
         // User::factory(10)->create();
     }

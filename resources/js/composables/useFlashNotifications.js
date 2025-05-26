@@ -7,8 +7,9 @@ let notificationId = 0
 // Notification interface
 export function useFlashNotifications() {
   // Add notification
-  const addNotification = (notification) => {
+  const addNotification = notification => {
     const id = ++notificationId
+
     const newNotification = {
       id,
       type: 'success',
@@ -33,7 +34,7 @@ export function useFlashNotifications() {
   }
   
   // Remove notification
-  const removeNotification = (id) => {
+  const removeNotification = id => {
     const index = notifications.value.findIndex(n => n.id === id)
     if (index > -1) {
       notifications.value.splice(index, 1)

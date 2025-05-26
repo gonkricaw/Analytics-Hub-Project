@@ -9,9 +9,17 @@
           indeterminate
         />
       </div>
-      <div v-if="showText" class="loading-text">
-        <h6 class="text-h6 mt-4">{{ title }}</h6>
-        <p v-if="subtitle" class="text-body-2 text-medium-emphasis mt-2">
+      <div
+        v-if="showText"
+        class="loading-text"
+      >
+        <h6 class="text-h6 mt-4">
+          {{ title }}
+        </h6>
+        <p
+          v-if="subtitle"
+          class="text-body-2 text-medium-emphasis mt-2"
+        >
           {{ subtitle }}
         </p>
       </div>

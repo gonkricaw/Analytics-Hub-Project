@@ -1,6 +1,10 @@
 <template>
   <div class="error-component">
-    <VCard class="mx-auto" max-width="400" variant="outlined">
+    <VCard
+      class="mx-auto"
+      max-width="400"
+      variant="outlined"
+    >
       <VCardText class="text-center pa-6">
         <VIcon
           icon="mdi-alert-circle-outline"
@@ -8,7 +12,9 @@
           color="error"
           class="mb-4"
         />
-        <h6 class="text-h6 mb-2">{{ title }}</h6>
+        <h6 class="text-h6 mb-2">
+          {{ title }}
+        </h6>
         <p class="text-body-2 text-medium-emphasis mb-4">
           {{ message }}
         </p>
@@ -18,7 +24,10 @@
             variant="outlined"
             @click="retry"
           >
-            <VIcon icon="mdi-refresh" class="me-1" />
+            <VIcon
+              icon="mdi-refresh"
+              class="me-1"
+            />
             Try Again
           </VBtn>
           <VBtn
@@ -26,7 +35,10 @@
             variant="text"
             @click="goBack"
           >
-            <VIcon icon="mdi-arrow-left" class="me-1" />
+            <VIcon
+              icon="mdi-arrow-left"
+              class="me-1"
+            />
             Go Back
           </VBtn>
         </div>
@@ -37,8 +49,6 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-
-const router = useRouter()
 
 const props = defineProps({
   title: {
@@ -53,8 +63,11 @@ const props = defineProps({
 
 const emit = defineEmits(['retry'])
 
+const router = useRouter()
+
 const retry = () => {
   emit('retry')
+
   // Force reload the current route
   window.location.reload()
 }

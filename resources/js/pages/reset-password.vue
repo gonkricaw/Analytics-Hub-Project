@@ -41,17 +41,18 @@ const resetComplete = ref(false)
 
 // Password requirements
 const passwordRequirements = [
-  { text: 'At least 8 characters', test: (pwd) => pwd.length >= 8 },
-  { text: 'At least one uppercase letter', test: (pwd) => /[A-Z]/.test(pwd) },
-  { text: 'At least one lowercase letter', test: (pwd) => /[a-z]/.test(pwd) },
-  { text: 'At least one number', test: (pwd) => /\d/.test(pwd) },
-  { text: 'At least one special character', test: (pwd) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
+  { text: 'At least 8 characters', test: pwd => pwd.length >= 8 },
+  { text: 'At least one uppercase letter', test: pwd => /[A-Z]/.test(pwd) },
+  { text: 'At least one lowercase letter', test: pwd => /[a-z]/.test(pwd) },
+  { text: 'At least one number', test: pwd => /\d/.test(pwd) },
+  { text: 'At least one special character', test: pwd => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
 ]
 
 // Computed properties
 const passwordStrength = computed(() => {
   const password = form.value.password
   const passedRequirements = passwordRequirements.filter(req => req.test(password))
+  
   return passedRequirements.length
 })
 
@@ -174,7 +175,10 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               class="mb-4"
             >
               <div class="d-flex align-center">
-                <VIcon icon="tabler-circle-check" class="me-2" />
+                <VIcon
+                  icon="tabler-circle-check"
+                  class="me-2"
+                />
                 <div>
                   <div class="text-body-1 font-weight-medium mb-1">
                     Password Reset Successfully!

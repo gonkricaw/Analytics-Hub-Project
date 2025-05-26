@@ -3,8 +3,10 @@ import { useAuth } from '@/composables/useAuth.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
-import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
+
+// import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
 import authV2LoginIllustrationLight from '@images/pages/auth-v2-login-illustration-light.png'
+import authV2LoginIllustrationDark from '@images/pages/log-in-girl.svg'
 import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
@@ -92,13 +94,15 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           />
         </div>
 
-        <!-- <img
+        <!--
+          <img
           class="auth-footer-mask flip-in-rtl"
           :src="authThemeMask"
           alt="auth-footer-mask"
           height="280"
           width="100"
-        > -->
+          > 
+        -->
       </div>
     </VCol>
 
@@ -182,20 +186,22 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               </VCol>
 
               <!-- create account -->
-              <!-- <VCol
+              <!--
+                <VCol
                 cols="12"
                 class="text-body-1 text-center"
-              >
+                >
                 <span class="d-inline-block">
-                  New on our platform?
+                New on our platform?
                 </span>
                 <a
-                  class="text-primary ms-1 d-inline-block text-body-1"
-                  href="javascript:void(0)"
+                class="text-primary ms-1 d-inline-block text-body-1"
+                href="javascript:void(0)"
                 >
-                  Create an account
+                Create an account
                 </a>
-              </VCol> -->
+                </VCol> 
+              -->
 
               <VCol
                 cols="12"
@@ -207,12 +213,14 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               </VCol>
 
               <!-- auth providers -->
-              <!-- <VCol
+              <!--
+                <VCol
                 cols="12"
                 class="text-center"
-              >
+                >
                 <AuthProvider />
-              </VCol> -->
+                </VCol> 
+              -->
             </VRow>
           </VForm>
         </VCardText>

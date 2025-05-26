@@ -21,7 +21,7 @@ const isLoading = ref(false)
 // Computed
 const dialogModel = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
+  set: value => emit('update:modelValue', value),
 })
 
 // Handle logout

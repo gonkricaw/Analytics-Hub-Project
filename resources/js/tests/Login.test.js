@@ -16,6 +16,7 @@ vi.mock('@/composables/useAuth', () => ({
 
 // Mock vue-router
 const mockPush = vi.fn()
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush,
@@ -26,7 +27,7 @@ vi.mock('vue-router', () => ({
 }))
 
 // Mock Vuetify components
-const createVuetifyMock = (name) => ({
+const createVuetifyMock = name => ({
   name,
   template: '<div><slot /></div>',
   props: Object.keys({}), // Accept any props
@@ -59,7 +60,7 @@ describe('Login Component', () => {
       global: {
         components: vuetifyComponents,
         mocks: {
-          $t: (key) => key,
+          $t: key => key,
         },
       },
     })

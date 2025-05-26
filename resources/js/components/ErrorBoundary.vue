@@ -1,8 +1,17 @@
 <template>
-  <div v-if="hasError" class="error-boundary">
-    <VCard class="mx-auto" max-width="500">
+  <div
+    v-if="hasError"
+    class="error-boundary"
+  >
+    <VCard
+      class="mx-auto"
+      max-width="500"
+    >
       <VCardTitle class="text-error">
-        <VIcon icon="mdi-alert-circle" class="me-2" />
+        <VIcon
+          icon="mdi-alert-circle"
+          class="me-2"
+        />
         Something went wrong
       </VCardTitle>
       <VCardText>
@@ -16,7 +25,9 @@
           class="mb-4"
         >
           <details>
-            <summary class="cursor-pointer">Error Details</summary>
+            <summary class="cursor-pointer">
+              Error Details
+            </summary>
             <pre class="mt-2 text-caption">{{ errorMessage }}</pre>
           </details>
         </VAlert>
@@ -27,7 +38,10 @@
           variant="outlined"
           @click="refresh"
         >
-          <VIcon icon="mdi-refresh" class="me-1" />
+          <VIcon
+            icon="mdi-refresh"
+            class="me-1"
+          />
           Refresh Page
         </VBtn>
         <VBtn
@@ -35,7 +49,10 @@
           variant="text"
           @click="goHome"
         >
-          <VIcon icon="mdi-home" class="me-1" />
+          <VIcon
+            icon="mdi-home"
+            class="me-1"
+          />
           Go Home
         </VBtn>
         <VSpacer />

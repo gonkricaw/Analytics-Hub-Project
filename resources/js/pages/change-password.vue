@@ -55,6 +55,7 @@ const isFormValid = computed(() => {
 // Password strength validation
 const passwordRequirements = computed(() => {
   const password = form.value.new_password
+  
   return {
     minLength: password.length >= 8,
     hasUppercase: /[A-Z]/.test(password),

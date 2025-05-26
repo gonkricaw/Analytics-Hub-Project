@@ -24,7 +24,7 @@ const termsContainer = ref(null)
 // Computed
 const dialogModel = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
+  set: value => emit('update:modelValue', value),
 })
 
 // Check if user has scrolled to bottom
@@ -33,6 +33,7 @@ const handleScroll = () => {
   if (element) {
     const threshold = 50 // Allow 50px threshold
     const isAtBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - threshold
+
     hasScrolledToBottom.value = isAtBottom
   }
 }
@@ -58,7 +59,7 @@ const handleAcceptTerms = async () => {
 }
 
 // Reset state when dialog opens
-watch(dialogModel, (newValue) => {
+watch(dialogModel, newValue => {
   if (newValue) {
     hasScrolledToBottom.value = false
     errorMessage.value = ''
@@ -185,8 +186,8 @@ const termsContent = `
         @scroll="handleScroll"
       >
         <div
-          v-html="termsContent"
           class="terms-content"
+          v-html="termsContent"
         />
       </VCardText>
 

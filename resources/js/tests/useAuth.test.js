@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock vue-router
 const mockPush = vi.fn()
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush,
@@ -12,6 +13,7 @@ vi.mock('vue-router', () => ({
 
 // Mock axios
 vi.mock('axios')
+
 const mockedAxios = vi.mocked(axios)
 
 describe('useAuth', () => {
@@ -57,6 +59,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(loginResponse)
 
       const credentials = {
@@ -91,6 +94,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(loginResponse)
 
       const result = await login({
@@ -114,6 +118,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.post.mockRejectedValueOnce(error)
 
       const result = await login({
@@ -172,6 +177,7 @@ describe('useAuth', () => {
           message: 'Password changed successfully',
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(response)
 
       const passwordData = {
@@ -199,6 +205,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.post.mockRejectedValueOnce(error)
 
       const result = await changePassword({
@@ -223,6 +230,7 @@ describe('useAuth', () => {
           message: 'Password reset link sent to your email',
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(response)
 
       const result = await forgotPassword('test@example.com')
@@ -244,6 +252,7 @@ describe('useAuth', () => {
           message: 'Password reset successfully',
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(response)
 
       const resetData = {
@@ -276,6 +285,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(response)
 
       const profileData = {
@@ -303,6 +313,7 @@ describe('useAuth', () => {
           message: 'Terms accepted successfully',
         },
       }
+
       mockedAxios.post.mockResolvedValueOnce(response)
 
       const result = await acceptTerms('1.0')
@@ -332,6 +343,7 @@ describe('useAuth', () => {
           },
         },
       }
+
       mockedAxios.get.mockResolvedValueOnce(response)
 
       const result = await initAuth()

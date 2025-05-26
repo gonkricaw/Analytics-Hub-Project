@@ -5,7 +5,7 @@ import { useFlashNotifications } from '@/composables/useFlashNotifications.js'
 const { notifications, removeNotification } = useFlashNotifications()
 
 // Handle notification close
-const handleNotificationClose = (id) => {
+const handleNotificationClose = id => {
   removeNotification(id)
 }
 </script>

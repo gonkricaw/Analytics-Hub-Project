@@ -9,6 +9,10 @@ use App\Http\Controllers\Admin\IpBlockController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserRoleController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\Admin\MenuController as AdminMenuController;
+use App\Http\Controllers\Admin\ContentController as AdminContentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,5 +103,44 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/users/{user}/roles/{role}', [UserRoleController::class, 'removeRole']);
             Route::post('/users/{user}/sync-roles', [UserRoleController::class, 'syncRoles']);
         });
+
+        // Menu Management
+        Route::prefix('menus')->group(function () {
+            Route::get('/', [AdminMenuController::class, 'index']);
+            Route::post('/', [AdminMenuController::class, 'store']);
+            Route::get('/hierarchy', [AdminMenuController::class, 'hierarchy']);
+            Route::get('/available-content', [AdminMenuController::class, 'availableContent']);
+            Route::get('/{menu}', [AdminMenuController::class, 'show']);
+            Route::put('/{menu}', [AdminMenuController::class, 'update']);
+            Route::delete('/{menu}', [AdminMenuController::class, 'destroy']);
+            Route::post('/reorder', [AdminMenuController::class, 'reorder']);
+            Route::get('/{menu}/children', [AdminMenuController::class, 'children']);
+        });
+
+        // Content Management
+        Route::prefix('contents')->group(function () {
+            Route::get('/', [AdminContentController::class, 'index']);
+            Route::post('/', [AdminContentController::class, 'store']);
+            Route::get('/{content}', [AdminContentController::class, 'show']);
+            Route::put('/{content}', [AdminContentController::class, 'update']);
+            Route::delete('/{content}', [AdminContentController::class, 'destroy']);
+            Route::post('/{content}/duplicate', [AdminContentController::class, 'duplicate']);
+            Route::get('/{content}/preview', [AdminContentController::class, 'preview']);
+            Route::get('/statistics', [AdminContentController::class, 'statistics']);
+        });
+    });
+
+    // Frontend Menu Access
+    Route::prefix('menus')->group(function () {
+        Route::get('/', [MenuController::class, 'index']);
+        Route::get('/hierarchy', [MenuController::class, 'hierarchy']);
+        Route::get('/{menu}', [MenuController::class, 'show']);
+    });
+
+    // Frontend Content Access
+    Route::prefix('contents')->group(function () {
+        Route::get('/', [ContentController::class, 'index']);
+        Route::get('/{content}', [ContentController::class, 'show']);
+        Route::get('/slug/{slug}', [ContentController::class, 'showBySlug']);
     });
 });

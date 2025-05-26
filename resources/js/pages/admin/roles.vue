@@ -3,14 +3,21 @@
     <!-- Page Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
       <div>
-        <h4 class="mb-1">Role Management</h4>
-        <p class="text-muted">Manage user roles and permissions</p>
+        <h4 class="mb-1">
+          Role Management
+        </h4>
+        <p class="text-muted">
+          Manage user roles and permissions
+        </p>
       </div>
       <VBtn
         color="primary"
         @click="showCreateDialog = true"
       >
-        <VIcon icon="tabler-plus" class="me-2" />
+        <VIcon
+          icon="tabler-plus"
+          class="me-2"
+        />
         Add Role
       </VBtn>
     </div>
@@ -19,7 +26,10 @@
     <VCard class="mb-4">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="searchQuery"
               placeholder="Search roles..."
@@ -28,7 +38,10 @@
               @input="handleSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="perPage"
               :items="perPageOptions"
@@ -36,7 +49,10 @@
               @update:model-value="loadRoles"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VBtn
               color="secondary"
               variant="outlined"
@@ -84,7 +100,10 @@
 
           <!-- Description -->
           <template #item.description="{ item }">
-            <span class="text-truncate" style="max-inline-size: 200px;">
+            <span
+              class="text-truncate"
+              style="max-inline-size: 200px;"
+            >
               {{ item.description }}
             </span>
           </template>
@@ -105,7 +124,9 @@
                 @click="viewRole(item)"
               >
                 <VIcon icon="tabler-eye" />
-                <VTooltip activator="parent">View Details</VTooltip>
+                <VTooltip activator="parent">
+                  View Details
+                </VTooltip>
               </VBtn>
               <VBtn
                 icon
@@ -115,7 +136,9 @@
                 @click="managePermissions(item)"
               >
                 <VIcon icon="tabler-shield-check" />
-                <VTooltip activator="parent">Manage Permissions</VTooltip>
+                <VTooltip activator="parent">
+                  Manage Permissions
+                </VTooltip>
               </VBtn>
               <VBtn
                 icon
@@ -125,7 +148,9 @@
                 @click="editRole(item)"
               >
                 <VIcon icon="tabler-edit" />
-                <VTooltip activator="parent">Edit Role</VTooltip>
+                <VTooltip activator="parent">
+                  Edit Role
+                </VTooltip>
               </VBtn>
               <VBtn
                 v-if="!isSystemRole(item.name)"
@@ -136,7 +161,9 @@
                 @click="deleteRole(item)"
               >
                 <VIcon icon="tabler-trash" />
-                <VTooltip activator="parent">Delete Role</VTooltip>
+                <VTooltip activator="parent">
+                  Delete Role
+                </VTooltip>
               </VBtn>
             </div>
           </template>
@@ -158,7 +185,10 @@
         </VCardTitle>
 
         <VCardText>
-          <VForm ref="roleForm" @submit.prevent="saveRole">
+          <VForm
+            ref="roleForm"
+            @submit.prevent="saveRole"
+          >
             <VRow>
               <VCol cols="12">
                 <VTextField
@@ -241,7 +271,9 @@
             >
               <VRow class="align-center mb-2">
                 <VCol>
-                  <h6 class="text-h6 text-capitalize">{{ group.replace('_', ' ') }}</h6>
+                  <h6 class="text-h6 text-capitalize">
+                    {{ group.replace('_', ' ') }}
+                  </h6>
                 </VCol>
                 <VCol cols="auto">
                   <VBtn
@@ -389,7 +421,7 @@ const selectedPermissions = ref([])
 const roleData = ref({
   name: '',
   display_name: '',
-  description: ''
+  description: '',
 })
 
 // Form reference
@@ -401,7 +433,7 @@ const headers = [
   { title: 'Permissions', key: 'permissions_count', sortable: true },
   { title: 'Description', key: 'description', sortable: false },
   { title: 'Created', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false, width: 160 }
+  { title: 'Actions', key: 'actions', sortable: false, width: 160 },
 ]
 
 const perPageOptions = [10, 15, 25, 50, 100]
@@ -412,14 +444,14 @@ const systemRoles = ['super_admin', 'admin']
 // Validation rules
 const rules = {
   required: v => !!v || 'This field is required',
-  roleName: v => /^[a-z_]+$/.test(v) || 'Role name must use lowercase letters and underscores only'
+  roleName: v => /^[a-z_]+$/.test(v) || 'Role name must use lowercase letters and underscores only',
 }
 
 // Computed
 const groupedPermissions = computed(() => {
   const filtered = permissions.value.filter(permission =>
     permission.display_name.toLowerCase().includes(permissionSearch.value.toLowerCase()) ||
-    permission.name.toLowerCase().includes(permissionSearch.value.toLowerCase())
+    permission.name.toLowerCase().includes(permissionSearch.value.toLowerCase()),
   )
 
   return filtered.reduce((groups, permission) => {
@@ -428,6 +460,7 @@ const groupedPermissions = computed(() => {
       groups[group] = []
     }
     groups[group].push(permission)
+    
     return groups
   }, {})
 })
@@ -440,7 +473,7 @@ const loadRoles = async () => {
       page: currentPage.value,
       per_page: perPage.value,
       search: searchQuery.value,
-      include: 'permissions'
+      include: 'permissions',
     }
 
     const response = await api.get('/admin/roles', { params })
@@ -460,7 +493,7 @@ const loadRoles = async () => {
 const loadPermissions = async () => {
   try {
     const response = await api.get('/admin/permissions', {
-      params: { per_page: 1000 } // Get all permissions
+      params: { per_page: 1000 }, // Get all permissions
     })
     
     if (response.data.success) {
@@ -471,7 +504,7 @@ const loadPermissions = async () => {
   }
 }
 
-const handleTableUpdate = (options) => {
+const handleTableUpdate = options => {
   currentPage.value = options.page
   perPage.value = options.itemsPerPage
   loadRoles()
@@ -489,11 +522,11 @@ const resetFilters = () => {
   loadRoles()
 }
 
-const isSystemRole = (roleName) => {
+const isSystemRole = roleName => {
   return systemRoles.includes(roleName)
 }
 
-const viewRole = async (role) => {
+const viewRole = async role => {
   try {
     const response = await api.get(`/admin/roles/${role.id}`)
     if (response.data.success) {
@@ -505,17 +538,17 @@ const viewRole = async (role) => {
   }
 }
 
-const editRole = (role) => {
+const editRole = role => {
   editingRole.value = role
   roleData.value = {
     name: role.name,
     display_name: role.display_name,
-    description: role.description
+    description: role.description,
   }
   showCreateDialog.value = true
 }
 
-const managePermissions = async (role) => {
+const managePermissions = async role => {
   try {
     const response = await api.get(`/admin/roles/${role.id}`)
     if (response.data.success) {
@@ -559,7 +592,7 @@ const saveRolePermissions = async () => {
   savingPermissions.value = true
   try {
     const response = await api.post(`/admin/roles/${selectedRole.value.id}/permissions`, {
-      permission_ids: selectedPermissions.value
+      permission_ids: selectedPermissions.value,
     })
 
     if (response.data.success) {
@@ -575,7 +608,7 @@ const saveRolePermissions = async () => {
   }
 }
 
-const deleteRole = async (role) => {
+const deleteRole = async role => {
   if (!confirm(`Are you sure you want to delete the role "${role.display_name}"?`)) {
     return
   }
@@ -593,7 +626,7 @@ const deleteRole = async (role) => {
   }
 }
 
-const isGroupSelected = (groupPermissions) => {
+const isGroupSelected = groupPermissions => {
   return groupPermissions.every(permission => selectedPermissions.value.includes(permission.id))
 }
 
@@ -624,7 +657,7 @@ const closeDialog = () => {
   roleData.value = {
     name: '',
     display_name: '',
-    description: ''
+    description: '',
   }
   nextTick(() => {
     roleForm.value?.resetValidation()
@@ -638,13 +671,13 @@ const closePermissionsDialog = () => {
   permissionSearch.value = ''
 }
 
-const formatDate = (date) => {
+const formatDate = date => {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 

@@ -40,21 +40,24 @@ export function usePerformance() {
     // Largest Contentful Paint
     if ('PerformanceObserver' in window) {
       try {
-        const lcpObserver = new PerformanceObserver((entryList) => {
+        const lcpObserver = new PerformanceObserver(entryList => {
           const entries = entryList.getEntries()
           const lastEntry = entries[entries.length - 1]
+
           performanceMetrics.value.largestContentfulPaint = lastEntry.startTime
         })
+
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
 
         // Cumulative Layout Shift
-        const clsObserver = new PerformanceObserver((entryList) => {
+        const clsObserver = new PerformanceObserver(entryList => {
           for (const entry of entryList.getEntries()) {
             if (!entry.hadRecentInput) {
               performanceMetrics.value.cumulativeLayoutShift += entry.value
             }
           }
         })
+
         clsObserver.observe({ entryTypes: ['layout-shift'] })
       } catch (error) {
         console.warn('Performance monitoring not fully supported:', error)
@@ -135,14 +138,15 @@ export function useLazyImage() {
   const imageLoaded = ref(false)
   const imageError = ref(false)
   
-  const loadImage = (src) => {
+  const loadImage = src => {
     return new Promise((resolve, reject) => {
       const img = new Image()
+
       img.onload = () => {
         imageLoaded.value = true
         resolve(img)
       }
-      img.onerror = (error) => {
+      img.onerror = error => {
         imageError.value = true
         reject(error)
       }
@@ -161,11 +165,12 @@ export function useLazyImage() {
 export function useResourcePreloader() {
   const preloadedResources = new Set()
   
-  const preloadScript = (src) => {
+  const preloadScript = src => {
     if (preloadedResources.has(src)) return Promise.resolve()
     
     return new Promise((resolve, reject) => {
       const link = document.createElement('link')
+
       link.rel = 'modulepreload'
       link.href = src
       link.onload = () => {
@@ -177,11 +182,12 @@ export function useResourcePreloader() {
     })
   }
   
-  const preloadStyle = (href) => {
+  const preloadStyle = href => {
     if (preloadedResources.has(href)) return Promise.resolve()
     
     return new Promise((resolve, reject) => {
       const link = document.createElement('link')
+
       link.rel = 'preload'
       link.as = 'style'
       link.href = href
@@ -194,11 +200,12 @@ export function useResourcePreloader() {
     })
   }
   
-  const preloadImage = (src) => {
+  const preloadImage = src => {
     if (preloadedResources.has(src)) return Promise.resolve()
     
     return new Promise((resolve, reject) => {
       const link = document.createElement('link')
+
       link.rel = 'preload'
       link.as = 'image'
       link.href = src
@@ -222,14 +229,14 @@ export function useResourcePreloader() {
 // Bundle splitting helper
 export function createChunkName(route) {
   // Convert route path to valid chunk name
-  return route.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+  return route.replace(/[^a-z0-9]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
 }
 
 // Memory management
 export function useMemoryManagement() {
   const cleanupTasks = []
   
-  const addCleanupTask = (task) => {
+  const addCleanupTask = task => {
     cleanupTasks.push(task)
   }
   
@@ -251,6 +258,7 @@ export function useMemoryManagement() {
       
       if (usagePercent > 80) {
         console.warn('High memory usage detected:', usagePercent.toFixed(2) + '%')
+
         // Trigger garbage collection if possible
         if (window.gc) {
           window.gc()
@@ -264,6 +272,7 @@ export function useMemoryManagement() {
         usagePercent,
       }
     }
+    
     return null
   }
   

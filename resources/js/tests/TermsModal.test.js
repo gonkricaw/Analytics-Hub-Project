@@ -19,7 +19,7 @@ vi.mock('@/composables/useAuth', () => ({
 }))
 
 // Mock Vuetify components
-const createVuetifyMock = (name) => ({
+const createVuetifyMock = name => ({
   name,
   template: '<div><slot /></div>',
   props: Object.keys({}),
@@ -56,7 +56,7 @@ describe('TermsModal Component', () => {
       global: {
         components: vuetifyComponents,
         mocks: {
-          $t: (key) => key,
+          $t: key => key,
         },
       },
     })
@@ -169,6 +169,7 @@ describe('TermsModal Component', () => {
     wrapper = mountComponent()
     
     const dialog = wrapper.findComponent({ name: 'VDialog' })
+
     expect(dialog.props('persistent')).toBe(true)
   })
 

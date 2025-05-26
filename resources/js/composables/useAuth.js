@@ -25,8 +25,9 @@ axios.interceptors.response.use(
       needsTermsAcceptance.value = false
       localStorage.removeItem('auth_token')
     }
+    
     return Promise.reject(error)
-  }
+  },
 )
 
 export function useAuth() {
@@ -50,6 +51,7 @@ export function useAuth() {
           needsPasswordChange.value = response.data.data.needs_password_change
           needsTermsAcceptance.value = response.data.data.needs_terms_acceptance
           currentTermsVersion.value = response.data.data.current_terms_version
+          
           return true
         }
       } catch (error) {
@@ -57,11 +59,12 @@ export function useAuth() {
         delete axios.defaults.headers.common['Authorization']
       }
     }
+    
     return false
   }
 
   // Methods
-  const login = async (credentials) => {
+  const login = async credentials => {
     try {
       // Get CSRF cookie first
       await axios.get('/sanctum/csrf-cookie')
@@ -69,11 +72,12 @@ export function useAuth() {
       const response = await axios.post('/login', {
         email: credentials.email,
         password: credentials.password,
-        remember: credentials.remember || false
+        remember: credentials.remember || false,
       })
 
       if (response.data.success) {
         const token = response.data.data.token
+
         localStorage.setItem('auth_token', token)
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         
@@ -94,9 +98,10 @@ export function useAuth() {
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed'
+      
       return { 
         success: false, 
-        error: message
+        error: message,
       }
     }
   }
@@ -116,80 +121,86 @@ export function useAuth() {
     delete axios.defaults.headers.common['Authorization']
     
     await router.push('/login')
+    
     return { success: true }
   }
 
-  const changePassword = async (passwordData) => {
+  const changePassword = async passwordData => {
     try {
       const response = await axios.post('/change-password', passwordData)
       if (response.data.success) {
         needsPasswordChange.value = false
+        
         return { success: true, message: response.data.message }
       }
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Password change failed'
+        error: error.response?.data?.message || 'Password change failed',
       }
     }
   }
 
-  const forgotPassword = async (email) => {
+  const forgotPassword = async email => {
     try {
       const response = await axios.post('/forgot-password', { email })
+      
       return { 
         success: true, 
-        message: response.data.message 
+        message: response.data.message, 
       }
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Request failed'
+        error: error.response?.data?.message || 'Request failed',
       }
     }
   }
 
-  const resetPassword = async (resetData) => {
+  const resetPassword = async resetData => {
     try {
       const response = await axios.post('/reset-password', resetData)
+      
       return { 
         success: true, 
-        message: response.data.message 
+        message: response.data.message, 
       }
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Password reset failed'
+        error: error.response?.data?.message || 'Password reset failed',
       }
     }
   }
 
-  const updateProfile = async (profileData) => {
+  const updateProfile = async profileData => {
     try {
       const response = await axios.post('/update-profile', profileData)
       if (response.data.success) {
         currentUser.value = { ...currentUser.value, ...response.data.data.user }
+        
         return { success: true, message: response.data.message }
       }
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Profile update failed'
+        error: error.response?.data?.message || 'Profile update failed',
       }
     }
   }
 
-  const acceptTerms = async (version) => {
+  const acceptTerms = async version => {
     try {
       const response = await axios.post('/accept-terms', { terms_version: version })
       if (response.data.success) {
         needsTermsAcceptance.value = false
+        
         return { success: true, message: response.data.message }
       }
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Terms acceptance failed'
+        error: error.response?.data?.message || 'Terms acceptance failed',
       }
     }
   }
@@ -254,6 +265,7 @@ export function setupAuthGuards(router) {
             window.flashNotifications.showError('You do not have permission to access this page.')
           }
         })
+        
         return
       }
       
@@ -269,6 +281,7 @@ export function setupAuthGuards(router) {
             window.flashNotifications.showError('Admin access required.')
           }
         })
+        
         return
       }
     }

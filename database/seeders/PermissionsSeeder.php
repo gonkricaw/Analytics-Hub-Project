@@ -73,6 +73,22 @@ class PermissionsSeeder extends Seeder
             ['name' => 'invitations.view', 'display_name' => 'View Invitations', 'description' => 'View user invitations', 'group' => 'invitations'],
             ['name' => 'invitations.send', 'display_name' => 'Send Invitations', 'description' => 'Send user invitations', 'group' => 'invitations'],
             ['name' => 'invitations.manage', 'display_name' => 'Manage Invitations', 'description' => 'Full invitation management', 'group' => 'invitations'],
+
+            // Menu Management Permissions
+            ['name' => 'menus.view', 'display_name' => 'View Menus', 'description' => 'View menu items', 'group' => 'menus'],
+            ['name' => 'menus.create', 'display_name' => 'Create Menus', 'description' => 'Create new menu items', 'group' => 'menus'],
+            ['name' => 'menus.update', 'display_name' => 'Update Menus', 'description' => 'Update menu items', 'group' => 'menus'],
+            ['name' => 'menus.delete', 'display_name' => 'Delete Menus', 'description' => 'Delete menu items', 'group' => 'menus'],
+            ['name' => 'menus.manage', 'display_name' => 'Manage Menus', 'description' => 'Full menu management capabilities', 'group' => 'menus'],
+            ['name' => 'menus.reorder', 'display_name' => 'Reorder Menus', 'description' => 'Reorder menu items', 'group' => 'menus'],
+
+            // Content Management Permissions
+            ['name' => 'content.view', 'display_name' => 'View Content', 'description' => 'View content items', 'group' => 'content'],
+            ['name' => 'content.create', 'display_name' => 'Create Content', 'description' => 'Create new content items', 'group' => 'content'],
+            ['name' => 'content.update', 'display_name' => 'Update Content', 'description' => 'Update content items', 'group' => 'content'],
+            ['name' => 'content.delete', 'display_name' => 'Delete Content', 'description' => 'Delete content items', 'group' => 'content'],
+            ['name' => 'content.manage', 'display_name' => 'Manage Content', 'description' => 'Full content management capabilities', 'group' => 'content'],
+            ['name' => 'content.publish', 'display_name' => 'Publish Content', 'description' => 'Publish and unpublish content', 'group' => 'content'],
         ];
 
         foreach ($permissions as $permission) {

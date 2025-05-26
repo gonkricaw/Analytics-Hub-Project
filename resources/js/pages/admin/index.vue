@@ -37,15 +37,17 @@ const filteredUsers = computed(() => {
   if (!searchQuery.value) return users.value
   
   const query = searchQuery.value.toLowerCase()
+  
   return users.value.filter(user => 
     user.name.toLowerCase().includes(query) ||
-    user.email.toLowerCase().includes(query)
+    user.email.toLowerCase().includes(query),
   )
 })
 
 const paginatedUsers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
+  
   return filteredUsers.value.slice(start, end)
 })
 
@@ -55,7 +57,8 @@ const totalPages = computed(() => {
 
 // Form validation
 const isInvitationFormValid = computed(() => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
+  
   return invitationForm.value.email && emailRegex.test(invitationForm.value.email)
 })
 
@@ -73,6 +76,7 @@ const fetchUsers = async () => {
     
     if (response.ok) {
       const data = await response.json()
+
       users.value = data.users || []
     } else {
       throw new Error('Failed to fetch users')
@@ -97,6 +101,7 @@ const fetchIpBlocks = async () => {
     
     if (response.ok) {
       const data = await response.json()
+
       ipBlocks.value = data.ip_blocks || []
     } else {
       throw new Error('Failed to fetch IP blocks')
@@ -141,7 +146,7 @@ const inviteUser = async () => {
   }
 }
 
-const unblockIp = async (ipAddress) => {
+const unblockIp = async ipAddress => {
   isUnblocking.value = true
   try {
     // TODO: Replace with actual API call
@@ -275,8 +280,8 @@ onMounted(() => {
               color="primary"
               variant="outlined"
               size="small"
-              @click="fetchUsers"
               :loading="isLoading"
+              @click="fetchUsers"
             >
               <VIcon
                 icon="tabler-refresh"

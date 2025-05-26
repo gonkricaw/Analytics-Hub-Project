@@ -10,7 +10,7 @@ const props = defineProps({
   type: {
     type: String,
     default: 'success',
-    validator: (value) => ['success', 'error', 'warning', 'info'].includes(value),
+    validator: value => ['success', 'error', 'warning', 'info'].includes(value),
   },
   title: {
     type: String,
@@ -45,6 +45,8 @@ const alertType = computed(() => {
     warning: 'warning',
     info: 'info',
   }
+
+  
   return typeMap[props.type] || 'success'
 })
 
@@ -55,6 +57,8 @@ const alertIcon = computed(() => {
     warning: 'tabler-alert-triangle',
     info: 'tabler-info-circle',
   }
+
+  
   return iconMap[props.type] || 'tabler-circle-check'
 })
 
@@ -65,11 +69,13 @@ const alertColor = computed(() => {
     warning: 'warning',
     info: 'info',
   }
+
+  
   return colorMap[props.type] || 'success'
 })
 
 // Watch for show prop changes
-watch(() => props.show, (newValue) => {
+watch(() => props.show, newValue => {
   visible.value = newValue
   
   if (newValue && !props.persistent && props.timeout > 0) {
