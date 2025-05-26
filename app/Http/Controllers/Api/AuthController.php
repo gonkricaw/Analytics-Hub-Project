@@ -7,12 +7,14 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Middleware\TrackUserSessions;
 use App\Mail\PasswordReset;
 use App\Mail\WelcomeUser;
 use App\Models\User;
 use App\Models\FailedLoginAttempt;
 use App\Models\IpBlock;
 use App\Models\TermsAndConditions;
+use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -97,6 +99,24 @@ class AuthController extends Controller
         // Create token
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Create session record for tracking
+        try {
+            $sessionId = $request->session()->getId();
+        } catch (\Exception $e) {
+            // For API requests without session store, generate a unique session ID
+            $sessionId = 'api-session-' . $user->id . '-' . time();
+        }
+        
+        UserSession::create([
+            'user_id' => $user->id,
+            'session_id' => $sessionId,
+            'ip_address' => $ipAddress,
+            'user_agent' => $userAgent,
+            'login_at' => now(),
+            'last_activity_at' => now(),
+            'is_active' => true,
+        ]);
+
         // Check if user needs to change password
         $needsPasswordChange = $user->needsPasswordChange();
 
@@ -127,7 +147,20 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $currentToken = $request->user()->currentAccessToken();
+        $user = $request->user();
+        
+        // Try to get session ID, handle cases where session is not available
+        try {
+            $sessionId = $request->session()->getId();
+            // Mark session as logged out
+            TrackUserSessions::markSessionLogout($sessionId, $user->id);
+        } catch (\Exception $e) {
+            // For API requests without session store, we'll just skip session tracking
+            // This is normal for API-only authentication
+        }
+
+        // Delete the current access token
+        $currentToken = $user->currentAccessToken();
         if ($currentToken) {
             $currentToken->delete();
         }

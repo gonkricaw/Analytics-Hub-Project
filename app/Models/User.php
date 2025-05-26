@@ -122,6 +122,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user sessions for this user.
+     */
+    public function userSessions()
+    {
+        return $this->hasMany(UserSession::class);
+    }
+
+    /**
+     * Get active user sessions for this user.
+     */
+    public function activeUserSessions()
+    {
+        return $this->userSessions()->where('is_active', true);
+    }
+
+    /**
      * Check if user needs to change password (temporary password used).
      */
     public function needsPasswordChange(): bool

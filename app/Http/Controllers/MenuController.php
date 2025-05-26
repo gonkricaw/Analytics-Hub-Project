@@ -77,4 +77,38 @@ class MenuController extends Controller
             'message' => 'Menu hierarchy retrieved successfully'
         ]);
     }
+
+    /**
+     * Display the specified menu.
+     */
+    public function show(Request $request, Menu $menu): JsonResponse
+    {
+        $user = $request->user();
+        
+        // Check if user has access to this menu
+        if (!$menu->isAccessibleBy($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied to this menu.'
+            ], 403);
+        }
+        
+        // Load related data
+        $menu->load(['content', 'children' => function($query) use ($user) {
+            $query->ordered();
+        }]);
+        
+        // Filter children based on user permissions
+        if ($menu->children) {
+            $menu->children = $menu->children->filter(function($child) use ($user) {
+                return $child->isAccessibleBy($user);
+            });
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $menu,
+            'message' => 'Menu retrieved successfully'
+        ]);
+    }
 }

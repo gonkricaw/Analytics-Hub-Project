@@ -37,7 +37,8 @@ class RolesSeeder extends Seeder
                     'admin.view', 'admin.logs',
                     'terms.view', 'terms.manage',
                     'ip_blocks.view', 'ip_blocks.manage',
-                    'invitations.view', 'invitations.send', 'invitations.manage'
+                    'invitations.view', 'invitations.send', 'invitations.manage',
+                    'email-templates.view', 'email-templates.create', 'email-templates.update', 'email-templates.delete'
                 ]
             ],
             'manager' => [

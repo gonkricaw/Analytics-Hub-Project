@@ -64,7 +64,6 @@ const handleViewAll = () => {
   router.push({ name: 'notifications' })
 }
 </script>
-</script>
 
 <template>
   <Notifications

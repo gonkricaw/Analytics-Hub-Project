@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Api\UserNotificationController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\AnalyticsTrackingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -174,6 +175,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{notification}/mark-read', [UserNotificationController::class, 'markAsRead']);
         Route::post('/{notification}/mark-unread', [UserNotificationController::class, 'markAsUnread']);
         Route::delete('/{notification}', [UserNotificationController::class, 'destroy']);
+    });
+
+    // Analytics Tracking
+    Route::prefix('analytics')->group(function () {
+        Route::post('/visit-duration', [AnalyticsTrackingController::class, 'updateVisitDuration']);
+        Route::get('/popular-content', [AnalyticsTrackingController::class, 'getPopularContent']);
+        Route::get('/popular-menus', [AnalyticsTrackingController::class, 'getPopularMenus']);
+        Route::post('/track-event', [AnalyticsTrackingController::class, 'trackCustomEvent']);
     });
 
     // Frontend Menu Access
