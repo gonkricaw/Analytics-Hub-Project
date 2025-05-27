@@ -1,50 +1,144 @@
 <script setup>
+import { useSystemConfigStore } from '@/stores/systemConfig'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/vue'
+import { onMounted, ref, storeToRefs } from 'vue'
 
-const props = defineProps({
-  slides: {
-    type: Array,
-    default: () => [],
-  },
-  settings: {
-    type: Object,
-    default: () => ({
-      autoplay: true,
-      interval: 5000,
-      indicators: true,
-      controls: true,
-    }),
-  },
-})
+const systemConfigStore = useSystemConfigStore()
+const { dashboardConfig } = storeToRefs(systemConfigStore)
+
+const isLoading = ref(true)
+const error = ref(null)
 
 const modules = [Navigation, Pagination, Autoplay]
 
+// Default slides for fallback
+const defaultSlides = [
+  {
+    id: 1,
+    title: 'Welcome to Indonet Analytics Hub',
+    subtitle: 'Comprehensive dashboard for real-time analytics and insights',
+    image: '/images/hero/hero-bg-1.jpg',
+    button_text: 'Get Started',
+    button_link: '#dashboard',
+  },
+  {
+    id: 2,
+    title: 'Real-time Data Analytics',
+    subtitle: 'Monitor your network performance with advanced analytics tools',
+    image: '/images/hero/hero-bg-2.jpg',
+    button_text: 'View Analytics',
+    button_link: '#analytics',
+  },
+]
+
+const slides = computed(() => {
+  const configSlides = dashboardConfig.value.jumbotron.slides
+  return Array.isArray(configSlides) && configSlides.length > 0 ? configSlides : defaultSlides
+})
+
+const settings = computed(() => dashboardConfig.value.jumbotron.settings)
+const isEnabled = computed(() => dashboardConfig.value.jumbotron.enabled)
+
 const swiperOptions = computed(() => ({
   modules,
-  autoplay: props.settings.autoplay ? {
-    delay: props.settings.interval,
+  autoplay: settings.value.autoplay ? {
+    delay: settings.value.interval,
     disableOnInteraction: false,
   } : false,
-  pagination: props.settings.indicators ? {
+  pagination: settings.value.indicators ? {
     clickable: true,
     dynamicBullets: true,
   } : false,
-  navigation: props.settings.controls,
+  navigation: settings.value.controls,
   loop: true,
   effect: 'fade',
   fadeEffect: {
     crossFade: true,
   },
 }))
+
+onMounted(async () => {
+  try {
+    // Ensure configurations are loaded
+    if (Object.keys(systemConfigStore.configurations).length === 0) {
+      await systemConfigStore.fetchConfigurations()
+    }
+  } catch (err) {
+    error.value = 'Failed to load jumbotron configuration'
+    console.error('JumbotronWidget: Failed to load configuration:', err)
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="jumbotron-widget">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="jumbotron-loading">
+      <VCard class="h-100 d-flex align-center justify-center" height="400">
+        <div class="text-center">
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="48"
+          />
+          <p class="text-body-1 mt-4 text-medium-emphasis">
+            Loading carousel...
+          </p>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="jumbotron-error">
+      <VCard class="h-100 d-flex align-center justify-center" height="400">
+        <div class="text-center">
+          <VIcon
+            icon="fa-exclamation-triangle"
+            size="48"
+            color="error"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            {{ error }}
+          </p>
+          <VBtn
+            @click="systemConfigStore.refreshCache()"
+            color="primary"
+            variant="outlined"
+            class="mt-4"
+          >
+            Retry
+          </VBtn>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Disabled State -->
+    <div v-else-if="!isEnabled" class="jumbotron-disabled">
+      <VCard class="h-100 d-flex align-center justify-center" height="400">
+        <div class="text-center">
+          <VIcon
+            icon="fa-eye-slash"
+            size="48"
+            color="secondary"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            Jumbotron carousel is currently disabled
+          </p>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Main Carousel -->
     <Swiper
+      v-else-if="slides.length > 0"
       v-bind="swiperOptions"
       class="jumbotron-carousel"
     >
@@ -102,6 +196,23 @@ const swiperOptions = computed(() => ({
         </div>
       </SwiperSlide>
     </Swiper>
+
+    <!-- No Slides State -->
+    <div v-else class="jumbotron-empty">
+      <VCard class="h-100 d-flex align-center justify-center" height="400">
+        <div class="text-center">
+          <VIcon
+            icon="fa-images"
+            size="48"
+            color="secondary"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            No carousel slides configured
+          </p>
+        </div>
+      </VCard>
+    </div>
   </div>
 </template>
 

@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\UserNotificationController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AnalyticsTrackingController;
+use App\Http\Controllers\Api\SystemConfigurationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,9 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Public terms and conditions
 Route::get('/terms-and-conditions/current', [TermsAndConditionsController::class, 'current']);
+
+// Public system configurations
+Route::get('/system-configurations/public', [SystemConfigurationController::class, 'public']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -164,6 +168,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/{emailTemplate}/preview', [EmailTemplateController::class, 'preview']);
             Route::post('/{emailTemplate}/clone', [EmailTemplateController::class, 'clone']);
             Route::post('/{emailTemplate}/toggle-status', [EmailTemplateController::class, 'toggleStatus']);
+        });
+
+        // System Configuration Management
+        Route::prefix('system-configurations')->group(function () {
+            Route::get('/', [SystemConfigurationController::class, 'index']);
+            Route::post('/', [SystemConfigurationController::class, 'store']);
+            Route::get('/grouped', [SystemConfigurationController::class, 'grouped']);
+            Route::post('/bulk-update', [SystemConfigurationController::class, 'bulkUpdate']);
+            Route::get('/{key}', [SystemConfigurationController::class, 'show']);
+            Route::put('/{key}', [SystemConfigurationController::class, 'update']);
+            Route::delete('/{key}', [SystemConfigurationController::class, 'destroy']);
         });
     });
 

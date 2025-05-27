@@ -1,5 +1,6 @@
 <script setup>
 import navItems from '@/navigation/horizontal'
+import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import { themeConfig } from '@themeConfig'
 
 // Components
@@ -9,6 +10,13 @@ import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import { HorizontalNavLayout } from '@layouts'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
+
+// System configuration store
+const systemConfigStore = useSystemConfigStore()
+
+// Computed properties for dynamic branding
+const appBranding = computed(() => systemConfigStore.appBranding)
+const appTitle = computed(() => appBranding.value.name || themeConfig.app.title)
 </script>
 
 <template>
@@ -22,7 +30,7 @@ import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
         <VNodeRenderer :nodes="themeConfig.app.logo" />
 
         <h1 class="app-title font-weight-bold leading-normal text-xl text-capitalize">
-          {{ themeConfig.app.title }}
+          {{ appTitle }}
         </h1>
       </RouterLink>
       <VSpacer />

@@ -5,6 +5,7 @@ import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-ill
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
 
 // import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
+import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import authV2LoginIllustrationLight from '@images/pages/auth-v2-login-illustration-light.png'
 import authV2LoginIllustrationDark from '@images/pages/log-in-girl.svg'
 import authV2MaskDark from '@images/pages/misc-mask-dark.png'
@@ -22,6 +23,9 @@ definePage({
 // Authentication composable
 const { login } = useAuth()
 
+// System configuration store
+const systemConfigStore = useSystemConfigStore()
+
 // Form state
 const form = ref({
   email: '',
@@ -37,6 +41,27 @@ const errorMessage = ref('')
 // Form validation
 const isFormValid = computed(() => {
   return form.value.email && form.value.password
+})
+
+// Login configuration computed properties
+const loginConfig = computed(() => systemConfigStore.loginConfig)
+const appBranding = computed(() => systemConfigStore.appBranding)
+
+// Dynamic welcome message and subtitle
+const welcomeMessage = computed(() => {
+  return loginConfig.value.welcome_message || 'Welcome to'
+})
+
+const subtitle = computed(() => {
+  return loginConfig.value.subtitle || 'Please sign-in to your account and start the adventure'
+})
+
+const showLogo = computed(() => {
+  return loginConfig.value.show_logo !== false // Default to true
+})
+
+const appTitle = computed(() => {
+  return appBranding.value.name || themeConfig.app.title
 })
 
 // Handle login
@@ -66,13 +91,23 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 <template>
   <a href="javascript:void(0)">
-    <div class="auth-logo d-flex align-center gap-x-3">
+    <div 
+      v-if="showLogo"
+      class="auth-logo d-flex align-center gap-x-3"
+    >
       <VNodeRenderer :nodes="themeConfig.app.logo" />
       <h1 class="auth-title">
-        {{ themeConfig.app.title }}
+        {{ appTitle }}
       </h1>
     </div>
   </a>
+
+  <!-- Custom CSS injection -->
+  <component 
+    :is="'style'" 
+    v-if="loginConfig.custom_css"
+    v-html="loginConfig.custom_css"
+  />
 
   <VRow
     no-gutters
@@ -118,12 +153,12 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to
+            {{ welcomeMessage }}
           </h4>
-          <h1><span class="text-capitalize">{{ themeConfig.app.title }}</span>!</h1>
+          <h1><span class="text-capitalize">{{ appTitle }}</span>!</h1>
           <br>
           <p class="mb-0">
-            Please sign-in to your account and start the adventure
+            {{ subtitle }}
           </p>
         </VCardText>
         <VCardText>

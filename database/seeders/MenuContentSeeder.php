@@ -490,11 +490,19 @@ class MenuContentSeeder extends Seeder
                 'permissions' => ['content.view'],
             ],
             [
+                'name' => 'System Configuration',
+                'type' => 'list_menu',
+                'icon' => 'fas fa-cogs',
+                'route' => '/admin/system-configuration',
+                'order' => 5,
+                'permissions' => ['admin.settings'],
+            ],
+            [
                 'name' => 'System Status',
                 'type' => 'content_menu',
                 'icon' => 'fas fa-server',
                 'content_slug' => 'system-status-health',
-                'order' => 5,
+                'order' => 6,
                 'permissions' => ['admin.view'],
             ],
         ]);

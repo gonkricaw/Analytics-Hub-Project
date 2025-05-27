@@ -1,5 +1,6 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth.js'
+import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
@@ -19,6 +20,14 @@ definePage({
 
 // Authentication composable
 const { forgotPassword } = useAuth()
+
+// System configuration store
+const systemConfigStore = useSystemConfigStore()
+
+// Computed properties for dynamic branding
+const appBranding = computed(() => systemConfigStore.appBranding)
+const appTitle = computed(() => appBranding.value.name || themeConfig.app.title)
+const showLogo = computed(() => systemConfigStore.loginConfig.showLogo !== false)
 
 // Form state
 const form = ref({
@@ -75,10 +84,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 <template>
   <a href="javascript:void(0)">
-    <div class="auth-logo d-flex align-center gap-x-3">
+    <div 
+      v-if="showLogo"
+      class="auth-logo d-flex align-center gap-x-3"
+    >
       <VNodeRenderer :nodes="themeConfig.app.logo" />
       <h1 class="auth-title">
-        {{ themeConfig.app.title }}
+        {{ appTitle }}
       </h1>
     </div>
   </a>

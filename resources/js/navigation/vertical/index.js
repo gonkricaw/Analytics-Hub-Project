@@ -49,6 +49,16 @@ export default [
           },
         ],
       },
+      {
+        title: 'Email Templates',
+        to: { name: 'admin-email-templates' },
+        icon: { icon: 'fas fa-envelope' },
+      },
+      {
+        title: 'System Configuration',
+        to: { name: 'admin-system-configurations' },
+        icon: { icon: 'fas fa-cogs' },
+      },
     ],
   },
 ]
