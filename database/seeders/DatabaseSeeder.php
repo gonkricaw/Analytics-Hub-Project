@@ -19,6 +19,12 @@ class DatabaseSeeder extends Seeder
         // Seed menu and content data
         $this->call(MenuContentSeeder::class);
 
+        // Seed email templates
+        $this->call(EmailTemplateSeeder::class);
+
+        // Seed system configurations
+        $this->call(SystemConfigurationSeeder::class);
+
         // Create additional test users if needed
         // User::factory(10)->create();
     }

@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('idnbi_user_notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('notification_id')->constrained('idnbi_notifications')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('notification_id');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+            
+            // Foreign key constraints
+            $table->foreign('user_id')->references('id')->on('idnbi_users')->onDelete('cascade');
+            $table->foreign('notification_id')->references('id')->on('idnbi_notifications')->onDelete('cascade');
             
             // Unique constraint to prevent duplicate entries
             $table->unique(['user_id', 'notification_id']);

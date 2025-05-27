@@ -15,16 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('subject');
-            $table->text('body');
-            $table->foreignId('created_by_user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('type', ['user_invitation', 'password_reset', 'welcome_user', 'notification', 'custom'])
-                  ->default('custom');
+            $table->text('html_content');
+            $table->text('text_content')->nullable();
+            $table->text('description')->nullable();
+            $table->json('placeholders')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->foreignId('created_by_user_id')->constrained('idnbi_users')->onDelete('cascade');
+            $table->enum('type', ['invitation', 'password_reset', 'welcome', 'notification', 'general'])
+                  ->default('general');
             $table->timestamps();
             
             // Indexes for performance
             $table->index('created_by_user_id');
             $table->index('type');
             $table->index('name');
+            $table->index('is_active');
         });
     }
 
