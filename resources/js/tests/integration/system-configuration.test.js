@@ -94,21 +94,22 @@ describe('SystemConfiguration', () => {
       bulkUpdateConfigurations: vi.fn(),
       uploadConfigurationFile: vi.fn(),
       validateJsonValue: vi.fn(),
-      formatConfigKey: vi.fn().mockImplementation((key) => 
+      formatConfigKey: vi.fn().mockImplementation(key => 
         key.split('_').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ')
+          word.charAt(0).toUpperCase() + word.slice(1),
+        ).join(' '),
       ),
-      formatGroupName: vi.fn().mockImplementation((groupName) => 
-        groupName.charAt(0).toUpperCase() + groupName.slice(1).replace(/_/g, ' ')
+      formatGroupName: vi.fn().mockImplementation(groupName => 
+        groupName.charAt(0).toUpperCase() + groupName.slice(1).replace(/_/g, ' '),
       ),
-      getGroupIcon: vi.fn().mockImplementation((groupName) => {
+      getGroupIcon: vi.fn().mockImplementation(groupName => {
         const icons = {
           dashboard: 'fas-tachometer-alt',
           app: 'fas-cog',
           login: 'fas-sign-in-alt',
-          default: 'fas-folder'
+          default: 'fas-folder',
         }
+        
         return icons[groupName] || icons.default
       }),
       isImageFile: vi.fn(),
@@ -122,11 +123,13 @@ describe('SystemConfiguration', () => {
 
   it('renders correctly', () => {
     const wrapper = createWrapper()
+
     expect(wrapper.find('[data-testid="system-configuration"]').exists()).toBe(true)
   })
 
   it('displays loading state', () => {
     mockSystemConfig.loading.value = true
+
     const wrapper = createWrapper()
     
     expect(wrapper.text()).toContain('Loading configurations...')
@@ -134,6 +137,7 @@ describe('SystemConfiguration', () => {
 
   it('displays error state', () => {
     mockSystemConfig.error.value = 'Failed to load configurations'
+
     const wrapper = createWrapper()
     
     expect(wrapper.text()).toContain('Failed to load configurations')
@@ -202,7 +206,7 @@ describe('SystemConfiguration', () => {
     // Mock validation function
     mockSystemConfig.validateJsonValue.mockReturnValue({
       valid: false,
-      error: 'Invalid JSON format'
+      error: 'Invalid JSON format',
     })
     
     await wrapper.setData({
@@ -304,14 +308,14 @@ describe('SystemConfiguration', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     
     mockSystemConfig.bulkUpdateConfigurations.mockRejectedValue(
-      new Error('Save failed')
+      new Error('Save failed'),
     )
     
     await wrapper.vm.saveAllConfigurations()
     
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Error saving configurations:',
-      expect.any(Error)
+      expect.any(Error),
     )
     
     consoleErrorSpy.mockRestore()

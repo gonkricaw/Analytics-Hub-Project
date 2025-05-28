@@ -1,17 +1,22 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem.js'
+
 const props = defineProps({
   users: {
     type: Array,
     default: () => [],
   },
 })
+
+// Icon system
+const { getStatusIcon, getEntityIcon, getIcon } = useIconSystem()
 </script>
 
 <template>
   <VCard class="frequent-users-widget">
     <VCardTitle class="d-flex align-center">
       <VIcon
-        icon="fa-trophy"
+        :icon="getStatusIcon('success')"
         class="me-3"
         color="warning"
       />
@@ -23,7 +28,7 @@ const props = defineProps({
         <template #activator="{ props: tooltipProps }">
           <VIcon
             v-bind="tooltipProps"
-            icon="fa-info-circle"
+            :icon="getStatusIcon('info')"
             size="16"
             color="surface-variant"
             class="ms-2"
@@ -38,7 +43,7 @@ const props = defineProps({
         class="empty-state pa-6 text-center"
       >
         <VIcon
-          icon="fa-chart-line"
+          :icon="getEntityIcon('chart')"
           size="48"
           color="surface-variant"
           class="mb-3"
@@ -61,19 +66,19 @@ const props = defineProps({
             <div class="rank-badge">
               <VIcon
                 v-if="index === 0"
-                icon="fa-crown"
+                :icon="getIcon('trophy')"
                 color="warning"
                 size="20"
               />
               <VIcon
                 v-else-if="index === 1"
-                icon="fa-medal"
+                :icon="getIcon('medal')"
                 color="info"
                 size="18"
               />
               <VIcon
                 v-else-if="index === 2"
-                icon="fa-award"
+                :icon="getIcon('award')"
                 color="success"
                 size="16"
               />

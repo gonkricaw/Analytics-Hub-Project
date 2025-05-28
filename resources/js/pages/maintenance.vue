@@ -17,8 +17,9 @@ const systemConfigStore = useSystemConfigStore()
 const appBranding = computed(() => systemConfigStore.appBranding)
 const generalSettings = computed(() => systemConfigStore.generalSettings)
 const appTitle = computed(() => appBranding.value.name || themeConfig.app.title)
+
 const maintenanceMessage = computed(() => 
-  generalSettings.value.maintenanceMessage || 'System is currently under maintenance. Please try again later.'
+  generalSettings.value.maintenanceMessage || 'System is currently under maintenance. Please try again later.',
 )
 </script>
 
@@ -43,7 +44,10 @@ const maintenanceMessage = computed(() =>
         Under Maintenance
       </h1>
       
-      <p class="text-body-1 mb-6 mx-auto" style="max-width: 500px;">
+      <p
+        class="text-body-1 mb-6 mx-auto"
+        style="max-width: 500px;"
+      >
         {{ maintenanceMessage }}
       </p>
 

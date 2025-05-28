@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom'
 import { config } from '@vue/test-utils'
 import { vi } from 'vitest'
 
@@ -25,6 +26,10 @@ const localStorageMock = {
 }
 
 Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+})
+
+Object.defineProperty(global, 'localStorage', {
   value: localStorageMock,
 })
 

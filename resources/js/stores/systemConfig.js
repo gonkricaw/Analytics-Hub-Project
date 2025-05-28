@@ -75,11 +75,32 @@ export const useSystemConfigStore = defineStore('systemConfig', () => {
     try {
       const response = await getPublicConfigurations()
       
-      // Transform array of configurations to object for easier access
+      // Transform configurations to a standardized object format for easier access
       const configObj = {}
-      if (response.data && Array.isArray(response.data)) {
+      
+      // Check if we have a config object in the response (already key-value mapped)
+      if (response.data && response.data.config && typeof response.data.config === 'object') {
+        // Convert simple key-value pairs into objects with key and value properties
+        Object.entries(response.data.config).forEach(([key, value]) => {
+          configObj[key] = { key, value }
+        })
+      }
+      // Check for standard data array of configuration objects
+      else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // Handle nested 'data' property that Laravel typically returns
+        response.data.data.forEach(config => {
+          if (config && config.key) {
+            configObj[config.key] = config
+          }
+        })
+      }
+      // Direct array in data property
+      else if (response.data && Array.isArray(response.data)) {
+        // Original format
         response.data.forEach(config => {
-          configObj[config.key] = config
+          if (config && config.key) {
+            configObj[config.key] = config
+          }
         })
       }
       
@@ -89,7 +110,11 @@ export const useSystemConfigStore = defineStore('systemConfig', () => {
       return configurations.value
     } catch (err) {
       error.value = err.message || 'Failed to fetch system configurations'
-      console.error('Failed to fetch system configurations:', err)
+      // Only log errors in development mode
+      if (import.meta.env.DEV) {
+        console.error('Failed to fetch system configurations:', err)
+        console.error('Error details:', JSON.stringify(err, null, 2))
+      }
       throw err
     } finally {
       isLoading.value = false
@@ -100,14 +125,17 @@ export const useSystemConfigStore = defineStore('systemConfig', () => {
     return configurations.value[key]?.value || defaultValue
   }
   
-  const getConfigByGroup = (groupPrefix) => {
+  const getConfigByGroup = groupPrefix => {
     const groupConfigs = {}
+
     Object.entries(configurations.value).forEach(([key, config]) => {
       if (key.startsWith(groupPrefix + '.')) {
         const subKey = key.substring(groupPrefix.length + 1)
+
         groupConfigs[subKey] = config.value
       }
     })
+    
     return groupConfigs
   }
   
@@ -127,8 +155,19 @@ export const useSystemConfigStore = defineStore('systemConfig', () => {
       try {
         await fetchConfigurations()
       } catch (err) {
-        // Silently fail on initialization to prevent blocking app load
-        console.warn('Failed to initialize system configurations:', err)
+        // Log the error but don't block app load (only in development)
+        if (import.meta.env.DEV) {
+          console.error('Failed to initialize system configurations:', err)
+        }
+        
+        // Set up default fallback configurations for critical UI components
+        configurations.value = {
+          'app_name': { key: 'app_name', value: 'Indonet Analytics Hub' },
+          'app_logo': { key: 'app_logo', value: '/images/logo/logo.png' },
+          'default_profile_photo': { key: 'default_profile_photo', value: '/images/avatars/default-avatar.png' },
+          'login_background': { key: 'login_background', value: '/images/backgrounds/login-bg.jpg' },
+          'app_footer': { key: 'app_footer', value: '© 2025 Indonet Analytics Hub. All rights reserved.' }
+        }
       }
     }
   }

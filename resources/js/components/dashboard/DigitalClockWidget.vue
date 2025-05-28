@@ -1,10 +1,15 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem.js'
+
 const props = defineProps({
   format: {
     type: String,
     default: '24h', // '12h' or '24h'
   },
 })
+
+// Icon system
+const { getIcon } = useIconSystem()
 
 const currentTime = ref(new Date())
 const currentDate = ref(new Date())
@@ -13,6 +18,7 @@ const currentDate = ref(new Date())
 onMounted(() => {
   const updateTime = () => {
     const now = new Date()
+
     currentTime.value = now
     currentDate.value = now
   }
@@ -28,6 +34,8 @@ const formattedTime = computed(() => {
     second: '2-digit',
     hour12: props.format === '12h',
   }
+
+  
   return currentTime.value.toLocaleTimeString('en-US', options)
 })
 
@@ -38,6 +46,8 @@ const formattedDate = computed(() => {
     month: 'long',
     day: 'numeric',
   }
+
+  
   return currentDate.value.toLocaleDateString('en-US', options)
 })
 
@@ -45,8 +55,10 @@ const timeZone = computed(() => {
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZoneName: 'short',
   })
+
   const parts = formatter.formatToParts(currentTime.value)
   const timeZonePart = parts.find(part => part.type === 'timeZoneName')
+  
   return timeZonePart ? timeZonePart.value : ''
 })
 </script>
@@ -56,7 +68,7 @@ const timeZone = computed(() => {
     <VCardText class="text-center pa-6">
       <div class="clock-display">
         <VIcon
-          icon="fa-clock"
+          :icon="getIcon('time')"
           size="24"
           class="clock-icon mb-3"
           color="primary"

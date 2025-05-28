@@ -1,5 +1,6 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth.js'
+import { useFormAccessibility } from '@/composables/useFormAccessibility.js'
 import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
@@ -40,6 +41,26 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const emailSent = ref(false)
 
+// Form accessibility
+const {
+  formId,
+  getFieldAttributes,
+  getFieldValidation,
+  announceToScreenReader,
+  handleKeyboardNavigation,
+  handleFormSubmission,
+  isFormSubmissionAccessible,
+} = useFormAccessibility({
+  formName: 'forgot-password',
+  validationRules: {
+    email: {
+      required: true,
+      email: true,
+      message: 'Please enter a valid email address',
+    },
+  },
+})
+
 // Form validation
 const isFormValid = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
@@ -49,31 +70,43 @@ const isFormValid = computed(() => {
 
 // Handle forgot password
 const handleForgotPassword = async () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value || !isFormSubmissionAccessible.value) return
   
-  isLoading.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  
-  try {
-    const result = await forgotPassword(form.value.email)
+  return await handleFormSubmission(async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    successMessage.value = ''
     
-    if (result.success) {
-      emailSent.value = true
-      successMessage.value = 'Password reset instructions have been sent to your email address.'
-    } else {
-      errorMessage.value = result.error || 'Failed to send password reset email'
+    try {
+      const result = await forgotPassword(form.value.email)
+      
+      if (result.success) {
+        emailSent.value = true
+        successMessage.value = 'Password reset instructions have been sent to your email address.'
+        announceToScreenReader('Password reset email sent successfully. Check your email for instructions.')
+        
+        return { success: true }
+      } else {
+        errorMessage.value = result.error || 'Failed to send password reset email'
+        announceToScreenReader(`Error: ${errorMessage.value}`)
+        
+        return { success: false, error: errorMessage.value }
+      }
+    } catch (error) {
+      errorMessage.value = 'An unexpected error occurred'
+      announceToScreenReader(`Error: ${errorMessage.value}`)
+      
+      return { success: false, error: errorMessage.value }
+    } finally {
+      isLoading.value = false
     }
-  } catch (error) {
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isLoading.value = false
-  }
+  })
 }
 
 // Resend email
 const handleResendEmail = async () => {
   emailSent.value = false
+  announceToScreenReader('Resending password reset email...')
   await handleForgotPassword()
 }
 
@@ -136,6 +169,15 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
 
+        <!-- Screen reader announcements -->
+        <div 
+          aria-live="polite" 
+          aria-atomic="true" 
+          class="sr-only"
+        >
+          {{ successMessage || errorMessage }}
+        </div>
+
         <VCardText>
           <!-- Success state -->
           <div v-if="emailSent">
@@ -178,8 +220,11 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           <!-- Form state -->
           <VForm
             v-else
+            :id="formId"
             @submit.prevent="handleForgotPassword"
+            @keydown="handleKeyboardNavigation"
           >
+            >
             <!-- Error message display -->
             <VAlert
               v-if="errorMessage"
@@ -199,6 +244,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   label="Email"
                   type="email"
                   placeholder="johndoe@email.com"
+                  v-bind="getFieldAttributes('email')"
+                  :error-messages="getFieldValidation('email', form.email).errorMessage"
                   :rules="[
                     (v) => !!v || 'Email is required',
                     (v) => /.+@.+\..+/.test(v) || 'Email must be valid'

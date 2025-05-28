@@ -1,14 +1,17 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem'
 import { useSystemConfigStore } from '@/stores/systemConfig'
+import { storeToRefs } from 'pinia'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { onMounted, ref, storeToRefs } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const systemConfigStore = useSystemConfigStore()
 const { dashboardConfig } = storeToRefs(systemConfigStore)
+const { getStatusIcon, getNavigationIcon, getEntityIcon } = useIconSystem()
 
 const isLoading = ref(true)
 const error = ref(null)
@@ -37,6 +40,7 @@ const defaultSlides = [
 
 const slides = computed(() => {
   const configSlides = dashboardConfig.value.jumbotron.slides
+  
   return Array.isArray(configSlides) && configSlides.length > 0 ? configSlides : defaultSlides
 })
 
@@ -79,8 +83,14 @@ onMounted(async () => {
 <template>
   <div class="jumbotron-widget">
     <!-- Loading State -->
-    <div v-if="isLoading" class="jumbotron-loading">
-      <VCard class="h-100 d-flex align-center justify-center" height="400">
+    <div
+      v-if="isLoading"
+      class="jumbotron-loading"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
         <div class="text-center">
           <VProgressCircular
             indeterminate
@@ -95,11 +105,17 @@ onMounted(async () => {
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="jumbotron-error">
-      <VCard class="h-100 d-flex align-center justify-center" height="400">
+    <div
+      v-else-if="error"
+      class="jumbotron-error"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
         <div class="text-center">
           <VIcon
-            icon="fa-exclamation-triangle"
+            :icon="getStatusIcon('error')"
             size="48"
             color="error"
             class="mb-4"
@@ -108,10 +124,10 @@ onMounted(async () => {
             {{ error }}
           </p>
           <VBtn
-            @click="systemConfigStore.refreshCache()"
             color="primary"
             variant="outlined"
             class="mt-4"
+            @click="systemConfigStore.refreshCache()"
           >
             Retry
           </VBtn>
@@ -120,11 +136,17 @@ onMounted(async () => {
     </div>
 
     <!-- Disabled State -->
-    <div v-else-if="!isEnabled" class="jumbotron-disabled">
-      <VCard class="h-100 d-flex align-center justify-center" height="400">
+    <div
+      v-else-if="!isEnabled"
+      class="jumbotron-disabled"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
         <div class="text-center">
           <VIcon
-            icon="fa-eye-slash"
+            :icon="getStatusIcon('warning')"
             size="48"
             color="secondary"
             class="mb-4"
@@ -185,7 +207,7 @@ onMounted(async () => {
                   >
                     {{ slide.button_text }}
                     <VIcon
-                      icon="fa-arrow-right"
+                      :icon="getNavigationIcon('external')"
                       class="ms-2"
                     />
                   </VBtn>
@@ -198,11 +220,17 @@ onMounted(async () => {
     </Swiper>
 
     <!-- No Slides State -->
-    <div v-else class="jumbotron-empty">
-      <VCard class="h-100 d-flex align-center justify-center" height="400">
+    <div
+      v-else
+      class="jumbotron-empty"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
         <div class="text-center">
           <VIcon
-            icon="fa-images"
+            :icon="getEntityIcon('image')"
             size="48"
             color="secondary"
             class="mb-4"
@@ -218,67 +246,68 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .jumbotron-widget {
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 10%);
 }
 
 .jumbotron-carousel {
-  height: 400px;
-  
+  block-size: 400px;
+
   :deep(.swiper-pagination) {
-    bottom: 20px;
-    
+    inset-block-end: 20px;
+
     .swiper-pagination-bullet {
-      background: rgba(255, 255, 255, 0.7);
-      width: 12px;
-      height: 12px;
-      margin: 0 8px;
-      
+      background: rgba(255, 255, 255, 70%);
+      block-size: 12px;
+      inline-size: 12px;
+      margin-block: 0;
+      margin-inline: 8px;
+
       &.swiper-pagination-bullet-active {
         background: white;
         transform: scale(1.2);
       }
     }
   }
-  
+
   :deep(.swiper-button-next),
   :deep(.swiper-button-prev) {
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    width: 44px;
-    height: 44px;
     border-radius: 50%;
     backdrop-filter: blur(10px);
-    
-    &:after {
+    background: rgba(255, 255, 255, 20%);
+    block-size: 44px;
+    color: white;
+    inline-size: 44px;
+
+    &::after {
       font-size: 18px;
       font-weight: bold;
     }
-    
+
     &:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 30%);
     }
   }
 }
 
 .jumbotron-slide {
-  height: 400px;
+  block-size: 400px;
 }
 
 .slide-background {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  block-size: 100%;
+  inline-size: 100%;
 }
 
 .slide-content {
-  height: 100%;
+  block-size: 100%;
 }
 
 .slide-text {
@@ -286,23 +315,23 @@ onMounted(async () => {
 }
 
 .slide-title {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   animation: fadeInUp 0.8s ease-out;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 50%);
 }
 
 .slide-subtitle {
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  opacity: 0.9;
   animation: fadeInUp 0.8s ease-out 0.2s both;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 50%);
 }
 
 .slide-button {
   animation: fadeInUp 0.8s ease-out 0.4s both;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 20%);
+
   &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 30%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -311,6 +340,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -319,29 +349,30 @@ onMounted(async () => {
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
     opacity: 0;
+    transform: translateY(50px);
   }
+
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
   .jumbotron-carousel {
-    height: 300px;
+    block-size: 300px;
   }
-  
+
   .jumbotron-slide {
-    height: 300px;
+    block-size: 300px;
   }
-  
+
   .slide-title {
     font-size: 1.75rem !important;
   }
-  
+
   .slide-subtitle {
     font-size: 1.1rem !important;
   }

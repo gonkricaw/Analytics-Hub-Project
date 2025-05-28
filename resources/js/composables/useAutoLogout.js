@@ -35,7 +35,7 @@ export function useAutoLogout() {
     if (isAuthenticated.value && isActive.value) {
       // Set warning timer
       warningTimer = setTimeout(() => {
-        showWarning()
+        showSessionWarning()
       }, WARNING_TIMEOUT)
 
       // Set logout timer
@@ -46,7 +46,7 @@ export function useAutoLogout() {
   }
 
   // Show warning notification
-  const showWarning = () => {
+  const showSessionWarning = () => {
     if (!warningShown.value) {
       warningShown.value = true
       showWarning(
@@ -55,7 +55,7 @@ export function useAutoLogout() {
           title: 'Session Expiring Soon',
           timeout: 0,
           persistent: true,
-        }
+        },
       )
     }
   }
@@ -69,7 +69,7 @@ export function useAutoLogout() {
         {
           title: 'Session Expired',
           timeout: 8000,
-        }
+        },
       )
     } catch (error) {
       console.error('Auto-logout error:', error)
@@ -119,12 +119,14 @@ export function useAutoLogout() {
   const timeUntilLogout = computed(() => {
     const elapsed = Date.now() - lastActivity.value
     const remaining = INACTIVITY_TIMEOUT - elapsed
+    
     return Math.max(0, remaining)
   })
 
   const timeUntilWarning = computed(() => {
     const elapsed = Date.now() - lastActivity.value
     const remaining = WARNING_TIMEOUT - elapsed
+    
     return Math.max(0, remaining)
   })
 
@@ -133,7 +135,7 @@ export function useAutoLogout() {
   })
 
   // Watch authentication state
-  watch(isAuthenticated, (newValue) => {
+  watch(isAuthenticated, newValue => {
     if (newValue) {
       startTracking()
     } else {

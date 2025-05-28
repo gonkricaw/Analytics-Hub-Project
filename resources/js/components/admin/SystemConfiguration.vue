@@ -5,7 +5,10 @@
         <VCard>
           <VCardTitle class="d-flex justify-space-between align-center">
             <span>
-              <VIcon icon="fas-cogs" class="me-2" />
+              <VIcon
+                icon="fas-cogs"
+                class="me-2"
+              />
               System Configuration
             </span>
             <VBtn
@@ -14,16 +17,28 @@
               :loading="systemConfig.loading.value"
               @click="saveAllConfigurations"
             >
-              <VIcon icon="fas-save" start />
+              <VIcon
+                icon="fas-save"
+                start
+              />
               Save All Changes
             </VBtn>
           </VCardTitle>
 
           <VCardText>
             <!-- Loading State -->
-            <div v-if="systemConfig.loading.value" class="text-center py-8">
-              <VProgressCircular indeterminate color="primary" size="64" />
-              <div class="mt-4">Loading configurations...</div>
+            <div
+              v-if="systemConfig.loading.value"
+              class="text-center py-8"
+            >
+              <VProgressCircular
+                indeterminate
+                color="primary"
+                size="64"
+              />
+              <div class="mt-4">
+                Loading configurations...
+              </div>
             </div>
 
             <!-- Error State -->
@@ -43,7 +58,10 @@
                   size="small"
                   @click="loadConfigurations"
                 >
-                  <VIcon icon="fas-refresh" start />
+                  <VIcon
+                    icon="fas-refresh"
+                    start
+                  />
                   Retry
                 </VBtn>
               </template>
@@ -51,13 +69,20 @@
 
             <!-- Configuration Tabs -->
             <div v-if="!systemConfig.loading.value && !systemConfig.error.value">
-              <VTabs v-model="activeTab" bg-color="primary" dark>
+              <VTabs
+                v-model="activeTab"
+                bg-color="primary"
+                dark
+              >
                 <VTab
                   v-for="(group, groupName) in systemConfig.groupedConfigurations.value"
                   :key="groupName"
                   :value="groupName"
                 >
-                  <VIcon :icon="systemConfig.getGroupIcon(groupName)" start />
+                  <VIcon
+                    :icon="systemConfig.getGroupIcon(groupName)"
+                    start
+                  />
                   {{ systemConfig.formatGroupName(groupName) }}
                   <VChip
                     v-if="hasGroupChanges(groupName)"
@@ -70,7 +95,10 @@
                 </VTab>
               </VTabs>
 
-              <VWindow v-model="activeTab" class="mt-4">
+              <VWindow
+                v-model="activeTab"
+                class="mt-4"
+              >
                 <VWindowItem
                   v-for="(group, groupName) in systemConfig.groupedConfigurations.value"
                   :key="groupName"
@@ -84,7 +112,10 @@
                       md="6"
                       class="mb-4"
                     >
-                      <VCard height="100%" :class="{ 'border-warning': isModified(config.key) }">
+                      <VCard
+                        height="100%"
+                        :class="{ 'border-warning': isModified(config.key) }"
+                      >
                         <VCardTitle class="d-flex align-center">
                           {{ systemConfig.formatConfigKey(config.key) }}
                           <VSpacer />
@@ -156,7 +187,10 @@
                               variant="outlined"
                               @change="handleFileUpload(config.key, $event)"
                             />
-                            <div v-if="config.value" class="mt-2">
+                            <div
+                              v-if="config.value"
+                              class="mt-2"
+                            >
                               <VImg
                                 v-if="systemConfig.isImageFile(config.value)"
                                 :src="systemConfig.getFileUrl(config.value)"
@@ -165,22 +199,34 @@
                                 max-width="200"
                                 class="rounded"
                               />
-                              <div v-else class="text-medium-emphasis">
-                                <VIcon icon="fas-file" class="me-2" />
+                              <div
+                                v-else
+                                class="text-medium-emphasis"
+                              >
+                                <VIcon
+                                  icon="fas-file"
+                                  class="me-2"
+                                />
                                 Current file: {{ systemConfig.getFileName(config.value) }}
                               </div>
                             </div>
                           </div>
 
                           <!-- Reset Button -->
-                          <div v-if="isModified(config.key)" class="mt-4">
+                          <div
+                            v-if="isModified(config.key)"
+                            class="mt-4"
+                          >
                             <VBtn
                               variant="outlined"
                               color="secondary"
                               size="small"
                               @click="resetConfig(config.key)"
                             >
-                              <VIcon icon="fas-undo" start />
+                              <VIcon
+                                icon="fas-undo"
+                                start
+                              />
                               Reset
                             </VBtn>
                           </div>
@@ -203,7 +249,10 @@
       timeout="3000"
       location="bottom right"
     >
-      <VIcon icon="fas-check-circle" start />
+      <VIcon
+        icon="fas-check-circle"
+        start
+      />
       {{ successMessage }}
     </VSnackbar>
   </div>
@@ -261,16 +310,17 @@ const initializeConfigValues = () => {
   })
 }
 
-const isModified = (key) => {
+const isModified = key => {
   return configValues.value[key] !== originalValues.value[key] || fileUploads.value[key]
 }
 
-const hasGroupChanges = (groupName) => {
+const hasGroupChanges = groupName => {
   const group = systemConfig.groupedConfigurations.value[groupName] || []
+  
   return group.some(config => isModified(config.key))
 }
 
-const resetConfig = (key) => {
+const resetConfig = key => {
   configValues.value[key] = originalValues.value[key]
   delete fileUploads.value[key]
   delete jsonErrors.value[key]
@@ -283,6 +333,7 @@ const validateJsonConfig = (key, value) => {
   } else {
     jsonErrors.value[key] = validation.error
   }
+  
   return validation.valid
 }
 
@@ -332,7 +383,7 @@ const saveAllConfigurations = async () => {
           
           configurations.push({
             key: config.key,
-            value: value
+            value: value,
           })
         }
       })
@@ -354,22 +405,23 @@ const saveAllConfigurations = async () => {
   }
 }
 
-const isLongText = (key) => {
+const isLongText = key => {
   return key.includes('marquee') || key.includes('footer') || key.includes('description')
 }
 
-const findConfigByKey = (key) => {
+const findConfigByKey = key => {
   for (const group of Object.values(systemConfig.groupedConfigurations.value)) {
     const config = group.find(c => c.key === key)
     if (config) return config
   }
+  
   return null
 }
 
 // Watchers
 watch(
   configValues,
-  (newValues) => {
+  newValues => {
     // Validate JSON configs on change
     Object.keys(newValues).forEach(key => {
       const config = findConfigByKey(key)
@@ -378,7 +430,7 @@ watch(
       }
     })
   },
-  { deep: true }
+  { deep: true },
 )
 
 // Lifecycle

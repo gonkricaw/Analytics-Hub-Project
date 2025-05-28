@@ -80,6 +80,8 @@ declare module 'vue' {
     ScrollToTop: typeof import('./resources/js/@core/components/ScrollToTop.vue')['default']
     ShareProjectDialog: typeof import('./resources/js/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./resources/js/@core/components/Shortcuts.vue')['default']
+    SkipLinks: typeof import('./resources/js/components/accessibility/SkipLinks.vue')['default']
+    SystemConfiguration: typeof import('./resources/js/components/admin/SystemConfiguration.vue')['default']
     TablePagination: typeof import('./resources/js/@core/components/TablePagination.vue')['default']
     TermsModal: typeof import('./resources/js/components/TermsModal.vue')['default']
     TheCustomizer: typeof import('./resources/js/@core/components/TheCustomizer.vue')['default']

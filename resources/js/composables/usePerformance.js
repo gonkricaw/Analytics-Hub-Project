@@ -40,25 +40,30 @@ export function usePerformance() {
     // Largest Contentful Paint
     if ('PerformanceObserver' in window) {
       try {
-        const lcpObserver = new PerformanceObserver(entryList => {
-          const entries = entryList.getEntries()
-          const lastEntry = entries[entries.length - 1]
+        // Check if the specific entryType is supported before observing
+        if (PerformanceObserver.supportedEntryTypes.includes('largest-contentful-paint')) {
+          const lcpObserver = new PerformanceObserver(entryList => {
+            const entries = entryList.getEntries()
+            const lastEntry = entries[entries.length - 1]
 
-          performanceMetrics.value.largestContentfulPaint = lastEntry.startTime
-        })
+            performanceMetrics.value.largestContentfulPaint = lastEntry.startTime
+          })
 
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
+          lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
+        }
 
         // Cumulative Layout Shift
-        const clsObserver = new PerformanceObserver(entryList => {
-          for (const entry of entryList.getEntries()) {
-            if (!entry.hadRecentInput) {
-              performanceMetrics.value.cumulativeLayoutShift += entry.value
+        if (PerformanceObserver.supportedEntryTypes.includes('layout-shift')) {
+          const clsObserver = new PerformanceObserver(entryList => {
+            for (const entry of entryList.getEntries()) {
+              if (!entry.hadRecentInput) {
+                performanceMetrics.value.cumulativeLayoutShift += entry.value
+              }
             }
-          }
-        })
+          })
 
-        clsObserver.observe({ entryTypes: ['layout-shift'] })
+          clsObserver.observe({ entryTypes: ['layout-shift'] })
+        }
       } catch (error) {
         console.warn('Performance monitoring not fully supported:', error)
       }

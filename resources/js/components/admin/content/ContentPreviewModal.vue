@@ -25,7 +25,7 @@
           class="modal-close"
           @click="$emit('close')"
         >
-          <i class="fas fa-times" />
+          <i :class="getActionIcon('close')" />
         </button>
       </div>
 
@@ -54,7 +54,7 @@
                 target="_blank"
                 class="url-link"
               >
-                <i class="fas fa-external-link-alt" />
+                <i :class="getNavigationIcon('external')" />
                 {{ content.embed_url_original }}
               </a>
             </div>
@@ -68,7 +68,7 @@
                 target="_blank"
                 class="url-link"
               >
-                <i class="fas fa-external-link-alt" />
+                <i :class="getNavigationIcon('external')" />
                 {{ content.embed_url_iframe }}
               </a>
             </div>
@@ -114,7 +114,7 @@
                 target="_blank"
                 class="btn btn-primary"
               >
-                <i class="fas fa-download" />
+                <i :class="getActionIcon('download')" />
                 Download
               </a>
               <a
@@ -122,7 +122,7 @@
                 target="_blank"
                 class="btn btn-secondary"
               >
-                <i class="fas fa-external-link-alt" />
+                <i :class="getNavigationIcon('external')" />
                 Open
               </a>
             </div>
@@ -164,7 +164,7 @@
           class="metadata-section"
         >
           <h3 class="section-title">
-            <i class="fas fa-tags" />
+            <i :class="getEntityIcon('content')" />
             Metadata
           </h3>
           
@@ -198,7 +198,7 @@
         <!-- Content Information -->
         <div class="info-section">
           <h3 class="section-title">
-            <i class="fas fa-info-circle" />
+            <i :class="getEntityIcon('info')" />
             Information
           </h3>
           
@@ -238,7 +238,7 @@
           class="btn btn-secondary"
           @click="$emit('close')"
         >
-          <i class="fas fa-times" />
+          <i :class="getActionIcon('close')" />
           Close
         </button>
         <a
@@ -247,7 +247,7 @@
           target="_blank"
           class="btn btn-primary"
         >
-          <i class="fas fa-external-link-alt" />
+          <i :class="getNavigationIcon('external')" />
           View Live
         </a>
       </div>
@@ -256,6 +256,7 @@
 </template>
 
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { computed } from 'vue'
 
 // Props
@@ -273,6 +274,9 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close'])
 
+// Icon system
+const { getActionIcon, getEntityIcon, getNavigationIcon } = useIconSystem()
+
 // Computed
 const hasMetadata = computed(() => {
   return props.content?.meta_title || 
@@ -282,28 +286,28 @@ const hasMetadata = computed(() => {
 
 // Methods
 const getContentTypeIcon = type => {
-  const icons = {
-    'custom': 'fas fa-file-alt',
-    'embed_url': 'fas fa-external-link-alt',
-    'file': 'fas fa-file',
-    'video': 'fas fa-video',
-    'image': 'fas fa-image',
+  const iconMap = {
+    'custom': getEntityIcon('content'),
+    'embed_url': getNavigationIcon('external'),
+    'file': getEntityIcon('file'),
+    'video': getEntityIcon('video'),
+    'image': getEntityIcon('image'),
   }
   
-  return icons[type] || 'fas fa-file'
+  return iconMap[type] || getEntityIcon('file')
 }
 
 const getFileIcon = content => {
-  if (!content) return 'fas fa-file'
+  if (!content) return getEntityIcon('file')
   
   const type = content.file_mime_type || ''
-  if (type.startsWith('video/')) return 'fas fa-video'
-  if (type.startsWith('image/')) return 'fas fa-image'
-  if (type.includes('pdf')) return 'fas fa-file-pdf'
-  if (type.includes('word')) return 'fas fa-file-word'
-  if (type.includes('excel') || type.includes('spreadsheet')) return 'fas fa-file-excel'
+  if (type.startsWith('video/')) return getEntityIcon('video')
+  if (type.startsWith('image/')) return getEntityIcon('image')
+  if (type.includes('pdf')) return getEntityIcon('pdf')
+  if (type.includes('word')) return getEntityIcon('document')
+  if (type.includes('excel') || type.includes('spreadsheet')) return getEntityIcon('spreadsheet')
   
-  return 'fas fa-file'
+  return getEntityIcon('file')
 }
 
 const formatFileSize = bytes => {

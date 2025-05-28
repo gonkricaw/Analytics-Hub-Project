@@ -22,12 +22,13 @@
     v-else
     class="menu-empty"
   >
-    <i class="fas fa-bars" />
+    <i :class="getNavigationIcon('menu')" />
     <span>No menu items available</span>
   </div>
 </template>
 
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { useAuthStore } from '@/stores/authStore'
 import { useMenuStore } from '@/stores/menuStore'
 import { computed, onMounted, ref } from 'vue'
@@ -37,6 +38,9 @@ import MenuTree from './MenuTree.vue'
 const router = useRouter()
 const menuStore = useMenuStore()
 const authStore = useAuthStore()
+
+// Icon system
+const { getNavigationIcon } = useIconSystem()
 
 const loading = ref(false)
 

@@ -1,5 +1,5 @@
 <script setup>
-import SystemConfiguration from '@/components/admin/SystemConfiguration.vue';
+import SystemConfiguration from '@/components/admin/SystemConfiguration.vue'
 
 // Define page metadata
 definePage({
@@ -7,7 +7,7 @@ definePage({
     action: 'read',
     subject: 'Admin',
     requiresAuth: true,
-    layout: 'admin'
+    layout: 'admin',
   },
 })
 </script>

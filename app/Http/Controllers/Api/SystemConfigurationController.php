@@ -264,16 +264,23 @@ class SystemConfigurationController extends Controller
     public function public(): JsonResponse
     {
         try {
-            $configurations = SystemConfiguration::where('is_public', true)
-                ->get()
-                ->keyBy('key')
+            $configurations = SystemConfiguration::where('is_public', true)->get();
+            
+            // Two formats:
+            // 1. Array of configuration objects (key, value, etc.) for frontend compatibility
+            $configArray = $configurations->toArray();
+            
+            // 2. Key-value object for easier consumption (backward compatibility)
+            $configObject = $configurations->keyBy('key')
                 ->map(function ($config) {
-                    return $config->getValue();
-                });
+                    return $config->value;
+                })
+                ->toArray();
 
             return response()->json([
                 'success' => true,
-                'data' => $configurations,
+                'data' => $configArray, // Return the array format
+                'config' => $configObject, // Also include the object format
                 'message' => 'Public system configurations retrieved successfully'
             ]);
         } catch (\Exception $e) {

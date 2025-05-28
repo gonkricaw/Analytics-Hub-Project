@@ -4,23 +4,43 @@
     class="modal-overlay"
     @click.self="$emit('close')"
   >
-    <div class="modal-container">
+    <div 
+      class="modal-container"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="dialogTitleId"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">
-          <i :class="isEditing ? 'fas fa-edit' : 'fas fa-plus'" />
+        <h2 
+          :id="dialogTitleId"
+          class="modal-title"
+        >
+          <i :class="isEditing ? getActionIcon('edit') : getActionIcon('add')" />
           {{ isEditing ? 'Edit Content' : 'Create Content' }}
         </h2>
         <button
           class="modal-close"
+          aria-label="Close dialog"
           @click="$emit('close')"
         >
-          <i class="fas fa-times" />
+          <i :class="getActionIcon('close')" />
         </button>
       </div>
 
+      <!-- Screen reader announcements -->
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        class="sr-only"
+      >
+        {{ formAnnouncement }}
+      </div>
+
       <form
+        :id="formId"
         class="modal-body"
         @submit.prevent="handleSubmit"
+        @keydown="handleKeyboardNavigation"
       >
         <!-- Basic Information -->
         <div class="form-section">
@@ -42,10 +62,14 @@
                 :class="{ 'is-invalid': errors.title }"
                 placeholder="Enter content title"
                 required
+                v-bind="getFieldAttributes('title')"
+                :aria-describedby="errors.title ? 'title-error' : undefined"
               >
               <div
                 v-if="errors.title"
+                id="title-error"
                 class="form-error"
+                role="alert"
               >
                 {{ errors.title[0] }}
               </div>
@@ -64,14 +88,21 @@
                 :class="{ 'is-invalid': errors.slug }"
                 placeholder="auto-generated-from-title"
                 required
+                v-bind="getFieldAttributes('slug')"
+                :aria-describedby="errors.slug ? 'slug-error' : 'slug-help'"
               >
               <div
                 v-if="errors.slug"
+                id="slug-error"
                 class="form-error"
+                role="alert"
               >
                 {{ errors.slug[0] }}
               </div>
-              <small class="form-help">Used in URLs. Leave empty to auto-generate from title.</small>
+              <small 
+                id="slug-help"
+                class="form-help"
+              >Used in URLs. Leave empty to auto-generate from title.</small>
             </div>
           </div>
 
@@ -86,6 +117,8 @@
               class="form-select"
               :class="{ 'is-invalid': errors.type }"
               required
+              v-bind="getFieldAttributes('type')"
+              :aria-describedby="errors.type ? 'type-error' : undefined"
             >
               <option value="">
                 Select content type
@@ -137,7 +170,7 @@
                   title="Bold"
                   @click="insertHtml('<strong>', '</strong>')"
                 >
-                  <i class="fas fa-bold" />
+                  <i :class="getFormattingIcon('bold')" />
                 </button>
                 <button
                   type="button"
@@ -145,7 +178,7 @@
                   title="Italic"
                   @click="insertHtml('<em>', '</em>')"
                 >
-                  <i class="fas fa-italic" />
+                  <i :class="getFormattingIcon('italic')" />
                 </button>
                 <button
                   type="button"
@@ -153,7 +186,7 @@
                   title="Heading"
                   @click="insertHtml('<h3>', '</h3>')"
                 >
-                  <i class="fas fa-heading" />
+                  <i :class="getFormattingIcon('heading')" />
                 </button>
                 <button
                   type="button"
@@ -161,7 +194,7 @@
                   title="List"
                   @click="insertHtml('<ul><li>', '</li></ul>')"
                 >
-                  <i class="fas fa-list-ul" />
+                  <i :class="getFormattingIcon('list')" />
                 </button>
                 <button
                   type="button"
@@ -169,7 +202,7 @@
                   title="Link"
                   @click="insertHtml('<a href=\'\'>', '</a>')"
                 >
-                  <i class="fas fa-link" />
+                  <i :class="getFormattingIcon('link')" />
                 </button>
               </div>
               <textarea
@@ -278,7 +311,7 @@
                 class="file-upload-prompt"
                 @click="$refs.fileInput.click()"
               >
-                <i class="fas fa-cloud-upload-alt" />
+                <i :class="getActionIcon('upload')" />
                 <p>Drop your {{ form.type }} here or click to browse</p>
                 <small>{{ getFileHint() }}</small>
               </div>
@@ -298,7 +331,7 @@
                   title="Remove file"
                   @click="removeFile"
                 >
-                  <i class="fas fa-times" />
+                  <i :class="getActionIcon('remove')" />
                 </button>
               </div>
             </div>
@@ -398,11 +431,11 @@
           >
             <i
               v-if="saving"
-              class="fas fa-spinner fa-spin"
+              :class="getStatusIcon('loading')"
             />
             <i
               v-else
-              :class="isEditing ? 'fas fa-save' : 'fas fa-plus'"
+              :class="isEditing ? getActionIcon('save') : getActionIcon('add')"
             />
             {{ saving ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}
           </button>
@@ -413,6 +446,8 @@
 </template>
 
 <script setup>
+import { useFormAccessibility } from '@/composables/useFormAccessibility.js'
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { useContentStore } from '@/stores/content'
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 
@@ -441,6 +476,57 @@ const selectedFile = ref(null)
 const isDragOver = ref(false)
 const fileInput = ref(null)
 
+// Form accessibility
+const {
+  formId,
+  getFieldAttributes,
+  getFieldValidation,
+  announceToScreenReader,
+  handleKeyboardNavigation,
+  handleFormSubmission,
+  isFormSubmissionAccessible,
+} = useFormAccessibility({
+  formName: 'content-form',
+  validationRules: {
+    title: {
+      required: true,
+      message: 'Title is required',
+    },
+    type: {
+      required: true,
+      message: 'Content type is required',
+    },
+    custom_content: {
+      required: computed(() => form.type === 'custom'),
+      message: 'HTML content is required for custom content type',
+    },
+    embed_url_original: {
+      required: computed(() => form.type === 'embed_url'),
+      message: 'URL is required for embedded content',
+    },
+  },
+})
+
+// Icon system
+const { getEntityIcon, getActionIcon, getStatusIcon } = useIconSystem()
+
+// Formatting icon helper for editor toolbar
+const getFormattingIcon = type => {
+  const formatIcons = {
+    bold: 'tabler-bold',
+    italic: 'tabler-italic', 
+    heading: 'tabler-heading',
+    list: 'tabler-list',
+    link: 'tabler-link',
+  }
+  
+  return formatIcons[type] || 'tabler-text-size'
+}
+
+// Generate unique IDs for accessibility
+const dialogTitleId = computed(() => `${formId.value}-title`)
+const formAnnouncement = ref('')
+
 // Form data
 const form = reactive({
   title: '',
@@ -460,40 +546,57 @@ const isEditing = computed(() => !!props.content?.id)
 
 // Methods
 const handleSubmit = async () => {
-  saving.value = true
-  errors.value = {}
+  if (!isFormSubmissionAccessible.value) return
 
-  try {
-    const formData = new FormData()
-    
-    // Add form fields
-    Object.keys(form).forEach(key => {
-      if (form[key] !== null && form[key] !== '') {
-        if (key === 'file' && selectedFile.value) {
-          formData.append('file', selectedFile.value)
-        } else if (key !== 'file') {
-          formData.append(key, form[key])
+  return await handleFormSubmission(async () => {
+    saving.value = true
+    errors.value = {}
+    formAnnouncement.value = 'Saving content...'
+
+    try {
+      const formData = new FormData()
+      
+      // Add form fields
+      Object.keys(form).forEach(key => {
+        if (form[key] !== null && form[key] !== '') {
+          if (key === 'file' && selectedFile.value) {
+            formData.append('file', selectedFile.value)
+          } else if (key !== 'file') {
+            formData.append(key, form[key])
+          }
         }
+      })
+
+      let response
+      if (isEditing.value) {
+        response = await contentStore.updateContent(props.content.id, formData)
+        formAnnouncement.value = 'Content updated successfully'
+        announceToScreenReader('Content updated successfully')
+      } else {
+        response = await contentStore.createContent(formData)
+        formAnnouncement.value = 'Content created successfully'
+        announceToScreenReader('Content created successfully')
       }
-    })
 
-    let response
-    if (isEditing.value) {
-      response = await contentStore.updateContent(props.content.id, formData)
-    } else {
-      response = await contentStore.createContent(formData)
+      emit('saved', response.data)
+      
+      return { success: true }
+    } catch (err) {
+      if (err.response?.data?.errors) {
+        errors.value = err.response.data.errors
+        formAnnouncement.value = 'Please correct the form errors'
+        announceToScreenReader('Form submission failed. Please correct the errors and try again.')
+      } else {
+        console.error('Content save error:', err)
+        formAnnouncement.value = 'An error occurred while saving'
+        announceToScreenReader('An error occurred while saving. Please try again.')
+      }
+      
+      return { success: false, error: err.message }
+    } finally {
+      saving.value = false
     }
-
-    emit('saved', response.data)
-  } catch (err) {
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
-    } else {
-      console.error('Content save error:', err)
-    }
-  } finally {
-    saving.value = false
-  }
+  })
 }
 
 const handleFileSelect = event => {
@@ -571,16 +674,16 @@ const getFileHint = () => {
 }
 
 const getFileIcon = () => {
-  if (!selectedFile.value) return 'fas fa-file'
+  if (!selectedFile.value) return getEntityIcon('file')
   
   const type = selectedFile.value.type
-  if (type.startsWith('video/')) return 'fas fa-video'
-  if (type.startsWith('image/')) return 'fas fa-image'
-  if (type.includes('pdf')) return 'fas fa-file-pdf'
-  if (type.includes('word')) return 'fas fa-file-word'
-  if (type.includes('excel') || type.includes('spreadsheet')) return 'fas fa-file-excel'
+  if (type.startsWith('video/')) return getEntityIcon('video')
+  if (type.startsWith('image/')) return getEntityIcon('image')
+  if (type.includes('pdf')) return getEntityIcon('pdf')
+  if (type.includes('word')) return getEntityIcon('document')
+  if (type.includes('excel') || type.includes('spreadsheet')) return getEntityIcon('spreadsheet')
   
-  return 'fas fa-file'
+  return getEntityIcon('file')
 }
 
 const formatFileSize = bytes => {

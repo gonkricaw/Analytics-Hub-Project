@@ -27,7 +27,7 @@ const mockContent = {
   status: 'published',
   menu_id: 1,
   created_at: '2025-05-26T00:00:00Z',
-  updated_at: '2025-05-26T00:00:00Z'
+  updated_at: '2025-05-26T00:00:00Z',
 }
 
 const mockMenu = {
@@ -40,7 +40,7 @@ const mockMenu = {
   status: 'active',
   parent_id: null,
   roles: [],
-  children: []
+  children: [],
 }
 
 describe('Content Store', () => {
@@ -72,8 +72,8 @@ describe('Content Store', () => {
         per_page: 12,
         total: 1,
         from: 1,
-        to: 1
-      }
+        to: 1,
+      },
     }
 
     mockAxios.get.mockResolvedValue(mockResponse)
@@ -93,13 +93,13 @@ describe('Content Store', () => {
       type: 'custom_html',
       content: '<p>New content</p>',
       status: 'draft',
-      menu_id: 1
+      menu_id: 1,
     }
 
     const mockResponse = {
       data: {
-        data: { ...newContentData, id: 2 }
-      }
+        data: { ...newContentData, id: 2 },
+      },
     }
 
     mockAxios.post.mockResolvedValue(mockResponse)
@@ -120,10 +120,10 @@ describe('Content Store', () => {
         data: {
           errors: {
             title: ['The title field is required.'],
-            type: ['The type field is required.']
-          }
-        }
-      }
+            type: ['The type field is required.'],
+          },
+        },
+      },
     }
 
     mockAxios.post.mockRejectedValue(mockError)
@@ -140,7 +140,7 @@ describe('Content Store', () => {
     contentStore.contents = [
       { ...mockContent, id: 1, title: 'HTML Content', type: 'custom_html' },
       { ...mockContent, id: 2, title: 'Video Content', type: 'embedded_url' },
-      { ...mockContent, id: 3, title: 'File Content', type: 'file_upload' }
+      { ...mockContent, id: 3, title: 'File Content', type: 'file_upload' },
     ]
 
     // Test search filter
@@ -179,7 +179,7 @@ describe('Menu Store', () => {
       { id: 1, name: 'parent', parent_id: null, order: 1 },
       { id: 2, name: 'child1', parent_id: 1, order: 1 },
       { id: 3, name: 'child2', parent_id: 1, order: 2 },
-      { id: 4, name: 'grandchild', parent_id: 2, order: 1 }
+      { id: 4, name: 'grandchild', parent_id: 2, order: 1 },
     ]
 
     const tree = menuStore.getMenuTree
@@ -196,13 +196,13 @@ describe('Menu Store', () => {
       url: '/new',
       icon: 'fas fa-new',
       order: 1,
-      status: 'active'
+      status: 'active',
     }
 
     const mockResponse = {
       data: {
-        data: { ...newMenuData, id: 5 }
-      }
+        data: { ...newMenuData, id: 5 },
+      },
     }
 
     mockAxios.post.mockResolvedValue(mockResponse)
@@ -218,14 +218,14 @@ describe('Menu Store', () => {
       { id: 1, name: 'menu1', parent_id: null },
       { id: 2, name: 'menu2', parent_id: 1 },
       { id: 3, name: 'menu3', parent_id: 2 },
-      { id: 4, name: 'menu4', parent_id: null }
+      { id: 4, name: 'menu4', parent_id: null },
     ]
 
     menuStore.parentMenus = [
       { id: 1, name: 'menu1' },
       { id: 2, name: 'menu2' },
       { id: 3, name: 'menu3' },
-      { id: 4, name: 'menu4' }
+      { id: 4, name: 'menu4' },
     ]
 
     // When editing menu2, should exclude menu2 and its descendants (menu3)
@@ -244,7 +244,7 @@ describe('Integration Tests', () => {
       '/admin/contents',
       '/admin/roles',
       '/admin/permissions',
-      '/admin/user-roles'
+      '/admin/user-roles',
     ]
 
     // In a real test, we would check router configuration
@@ -261,7 +261,7 @@ describe('Integration Tests', () => {
       'contents.view',
       'contents.create',
       'contents.edit',
-      'contents.delete'
+      'contents.delete',
     ]
 
     expect(permissions.length).toBe(8)
@@ -282,7 +282,7 @@ console.log('🚀 Run tests with: npm run test')
 console.log('🔍 Run with coverage: npm run test:coverage')
 
 export {
-    mockAxios, mockContent,
-    mockMenu
+  mockAxios, mockContent,
+  mockMenu,
 }
 

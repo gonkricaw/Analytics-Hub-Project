@@ -1,5 +1,7 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth.js'
+import { useFormAccessibility } from '@/composables/useFormAccessibility.js'
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
@@ -45,6 +47,37 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
+// Form accessibility
+const {
+  formId,
+  getFieldAttributes,
+  getFieldValidation,
+  announceToScreenReader,
+  handleKeyboardNavigation,
+  handleFormSubmission,
+  isFormSubmissionAccessible,
+} = useFormAccessibility({
+  formName: 'change-password',
+  validationRules: {
+    current_password: {
+      required: !needsPasswordChange.value,
+      message: 'Current password is required',
+    },
+    new_password: {
+      required: true,
+      minLength: 8,
+      message: 'New password must meet all requirements',
+    },
+    new_password_confirmation: {
+      required: true,
+      message: 'Password confirmation is required',
+    },
+  },
+})
+
+// Icon system
+const { getStatusIcon, getActionIcon } = useIconSystem()
+
 // Form validation
 const isFormValid = computed(() => {
   if (needsPasswordChange.value) {
@@ -79,42 +112,53 @@ const isPasswordStrong = computed(() => {
 
 // Handle password change
 const handlePasswordChange = async () => {
-  if (!isFormValid.value || !isPasswordStrong.value) return
+  if (!isFormValid.value || !isPasswordStrong.value || !isFormSubmissionAccessible.value) return
   
-  isLoading.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  
-  try {
-    const passwordData = {
-      new_password: form.value.new_password,
-      new_password_confirmation: form.value.new_password_confirmation,
-    }
-
-    // Add current password if not initial change
-    if (!needsPasswordChange.value) {
-      passwordData.current_password = form.value.current_password
-    } else {
-      passwordData.is_initial_change = true
-    }
-
-    const result = await changePassword(passwordData)
+  return await handleFormSubmission(async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    successMessage.value = ''
     
-    if (result.success) {
-      successMessage.value = result.message || 'Password changed successfully!'
+    try {
+      const passwordData = {
+        new_password: form.value.new_password,
+        new_password_confirmation: form.value.new_password_confirmation,
+      }
+
+      // Add current password if not initial change
+      if (!needsPasswordChange.value) {
+        passwordData.current_password = form.value.current_password
+      } else {
+        passwordData.is_initial_change = true
+      }
+
+      const result = await changePassword(passwordData)
       
-      // Redirect to dashboard after successful change
-      setTimeout(() => {
-        router.push('/')
-      }, 2000)
-    } else {
-      errorMessage.value = result.error || 'Password change failed'
+      if (result.success) {
+        successMessage.value = result.message || 'Password changed successfully!'
+        announceToScreenReader('Password changed successfully. Redirecting to dashboard in 2 seconds.')
+        
+        // Redirect to dashboard after successful change
+        setTimeout(() => {
+          router.push('/')
+        }, 2000)
+        
+        return { success: true }
+      } else {
+        errorMessage.value = result.error || 'Password change failed'
+        announceToScreenReader(`Error: ${errorMessage.value}`)
+        
+        return { success: false, error: errorMessage.value }
+      }
+    } catch (error) {
+      errorMessage.value = 'An unexpected error occurred'
+      announceToScreenReader(`Error: ${errorMessage.value}`)
+      
+      return { success: false, error: errorMessage.value }
+    } finally {
+      isLoading.value = false
     }
-  } catch (error) {
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isLoading.value = false
-  }
+  })
 }
 
 // Redirect if user doesn't need password change and it's not initial login
@@ -191,8 +235,21 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
 
+        <!-- Screen reader announcements -->
+        <div 
+          aria-live="polite" 
+          aria-atomic="true" 
+          class="sr-only"
+        >
+          {{ successMessage || errorMessage }}
+        </div>
+
         <VCardText>
-          <VForm @submit.prevent="handlePasswordChange">
+          <VForm 
+            :id="formId"
+            @submit.prevent="handlePasswordChange"
+            @keydown="handleKeyboardNavigation"
+          >
             <!-- Success message display -->
             <VAlert
               v-if="successMessage"
@@ -226,6 +283,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   :type="isCurrentPasswordVisible ? 'text' : 'password'"
                   autocomplete="current-password"
                   :append-inner-icon="isCurrentPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  v-bind="getFieldAttributes('current_password')"
+                  :error-messages="getFieldValidation('current_password', form.current_password).errorMessage"
                   @click:append-inner="isCurrentPasswordVisible = !isCurrentPasswordVisible"
                 />
               </VCol>
@@ -239,6 +298,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   :type="isNewPasswordVisible ? 'text' : 'password'"
                   autocomplete="new-password"
                   :append-inner-icon="isNewPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  v-bind="getFieldAttributes('new_password')"
+                  :error-messages="getFieldValidation('new_password', form.new_password).errorMessage"
                   @click:append-inner="isNewPasswordVisible = !isNewPasswordVisible"
                 />
 
@@ -257,7 +318,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                         <template #prepend>
                           <VIcon
                             :color="passwordRequirements.minLength ? 'success' : 'error'"
-                            :icon="passwordRequirements.minLength ? 'fa-check-circle' : 'fa-times-circle'"
+                            :icon="passwordRequirements.minLength ? getStatusIcon('success') : getStatusIcon('error')"
                             size="16"
                           />
                         </template>
@@ -269,7 +330,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                         <template #prepend>
                           <VIcon
                             :color="passwordRequirements.hasUppercase ? 'success' : 'error'"
-                            :icon="passwordRequirements.hasUppercase ? 'fa-check-circle' : 'fa-times-circle'"
+                            :icon="passwordRequirements.hasUppercase ? getStatusIcon('success') : getStatusIcon('error')"
                             size="16"
                           />
                         </template>
@@ -281,7 +342,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                         <template #prepend>
                           <VIcon
                             :color="passwordRequirements.hasLowercase ? 'success' : 'error'"
-                            :icon="passwordRequirements.hasLowercase ? 'fa-check-circle' : 'fa-times-circle'"
+                            :icon="passwordRequirements.hasLowercase ? getStatusIcon('success') : getStatusIcon('error')"
                             size="16"
                           />
                         </template>
@@ -293,7 +354,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                         <template #prepend>
                           <VIcon
                             :color="passwordRequirements.hasNumber ? 'success' : 'error'"
-                            :icon="passwordRequirements.hasNumber ? 'fa-check-circle' : 'fa-times-circle'"
+                            :icon="passwordRequirements.hasNumber ? getStatusIcon('success') : getStatusIcon('error')"
                             size="16"
                           />
                         </template>
@@ -315,6 +376,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   :type="isConfirmPasswordVisible ? 'text' : 'password'"
                   autocomplete="new-password"
                   :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  v-bind="getFieldAttributes('new_password_confirmation')"
+                  :error-messages="getFieldValidation('new_password_confirmation', form.new_password_confirmation).errorMessage"
                   @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
                 />
 
@@ -331,7 +394,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   >
                     <VIcon
                       start
-                      icon="fa-check"
+                      :icon="getStatusIcon('success')"
                       size="14"
                     />
                     Passwords match
@@ -344,7 +407,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   >
                     <VIcon
                       start
-                      icon="fa-times"
+                      :icon="getStatusIcon('error')"
                       size="14"
                     />
                     Passwords don't match

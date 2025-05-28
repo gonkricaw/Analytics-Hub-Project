@@ -38,28 +38,28 @@ export const useNotificationStore = defineStore('notification', {
     /**
      * Get unread notifications
      */
-    unreadNotifications: (state) => {
+    unreadNotifications: state => {
       return state.notifications.filter(notification => !notification.isSeen)
     },
 
     /**
      * Get read notifications
      */
-    readNotifications: (state) => {
+    readNotifications: state => {
       return state.notifications.filter(notification => notification.isSeen)
     },
 
     /**
      * Check if there are any unread notifications
      */
-    hasUnreadNotifications: (state) => {
+    hasUnreadNotifications: state => {
       return state.unreadCount > 0
     },
 
     /**
      * Get formatted notifications for UI components
      */
-    formattedNotifications: (state) => {
+    formattedNotifications: state => {
       return state.notifications.map(notification => ({
         id: notification.id,
         title: notification.title,

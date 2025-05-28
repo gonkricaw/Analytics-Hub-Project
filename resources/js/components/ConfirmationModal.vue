@@ -4,22 +4,24 @@
     :width="width"
     persistent
     class="confirmation-modal"
+    transition="dialog-bottom-transition"
     @update:model-value="handleClose"
   >
-    <VCard class="pa-2">
-      <VCardTitle class="d-flex align-center gap-3 pa-6">
+    <VCard class="confirmation-card animate-in">
+      <VCardTitle class="confirmation-header d-flex align-center gap-3 pa-6">
         <VIcon
           :icon="icon"
           :color="iconColor"
           size="28"
+          class="confirmation-icon animate-pulse-subtle"
         />
         <span class="text-h5 font-weight-medium">{{ title }}</span>
       </VCardTitle>
 
-      <VCardText class="pa-6 pt-2">
+      <VCardText class="confirmation-content pa-6 pt-2">
         <div
           v-if="message"
-          class="text-body-1"
+          class="text-body-1 confirmation-message"
         >
           {{ message }}
         </div>
@@ -30,7 +32,7 @@
         
         <div
           v-if="details"
-          class="mt-4 pa-3 bg-grey-50 rounded"
+          class="confirmation-details mt-4 pa-3 bg-grey-50 rounded"
         >
           <div class="text-caption text-medium-emphasis">
             Details:
@@ -41,18 +43,19 @@
         </div>
       </VCardText>
 
-      <VCardActions class="pa-6 pt-2">
+      <VCardActions class="confirmation-actions pa-6 pt-2">
         <VSpacer />
         
         <VBtn
           variant="outlined"
           color="grey"
           :disabled="loading"
+          class="confirmation-btn confirmation-btn--cancel hover-lift"
           @click="handleCancel"
         >
           <VIcon
             start
-            icon="fas fa-times"
+            :icon="getActionIcon('close')"
           />
           {{ cancelText }}
         </VBtn>
@@ -61,6 +64,7 @@
           :variant="confirmVariant"
           :color="confirmColor"
           :loading="loading"
+          class="confirmation-btn confirmation-btn--confirm hover-lift"
           @click="handleConfirm"
         >
           <VIcon
@@ -80,7 +84,11 @@
  * 
  * A reusable confirmation dialog for destructive or important actions
  * Supports different types (danger, warning, info, success) with appropriate styling
+ * Enhanced with centralized animation system and improved UX
  */
+
+import { useIconSystem } from '@/composables/useIconSystem'
+import { computed } from 'vue'
 
 const props = defineProps({
   visible: {
@@ -140,36 +148,39 @@ const emit = defineEmits([
   'update:visible',
 ])
 
+// Icon system
+const { getStatusIcon, getActionIcon } = useIconSystem()
+
 // Computed properties for styling based on type
 const typeConfig = computed(() => {
   const configs = {
     danger: {
-      icon: 'fas fa-exclamation-triangle',
+      icon: getStatusIcon('error'),
       iconColor: 'error',
       confirmColor: 'error',
       confirmVariant: 'flat',
-      confirmIcon: 'fas fa-trash',
+      confirmIcon: getActionIcon('remove'),
     },
     warning: {
-      icon: 'fas fa-exclamation-circle',
+      icon: getStatusIcon('warning'),
       iconColor: 'warning',
       confirmColor: 'warning',
       confirmVariant: 'flat',
-      confirmIcon: 'fas fa-check',
+      confirmIcon: getActionIcon('save'),
     },
     info: {
-      icon: 'fas fa-info-circle',
+      icon: getStatusIcon('info'),
       iconColor: 'info',
       confirmColor: 'info',
       confirmVariant: 'flat',
-      confirmIcon: 'fas fa-check',
+      confirmIcon: getActionIcon('save'),
     },
     success: {
-      icon: 'fas fa-check-circle',
+      icon: getStatusIcon('success'),
       iconColor: 'success',
       confirmColor: 'success',
       confirmVariant: 'flat',
-      confirmIcon: 'fas fa-check',
+      confirmIcon: getActionIcon('save'),
     },
   }
   
@@ -200,48 +211,180 @@ const handleClose = value => {
 </script>
 
 <style scoped>
+/* Base modal styles */
 .confirmation-modal {
   z-index: 9999;
 }
 
-.confirmation-modal :deep(.v-card) {
-  overflow: visible;
+.confirmation-card {
+  border-radius: 16px !important;
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.16),
+    0 8px 32px rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(8px);
+  overflow: visible !important;
+  transform-origin: center;
+  transition: transform var(--animation-duration-normal) var(--animation-easing-smooth);
 }
 
-.confirmation-modal :deep(.v-card-title) {
-  border-block-end: 1px solid rgb(var(--v-theme-on-surface), 0.12);
+/* Header styling */
+.confirmation-header {
+  border-block-end: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface), 0.95), rgba(var(--v-theme-surface-variant), 0.3));
+  border-radius: 16px 16px 0 0 !important;
 }
 
-.confirmation-modal :deep(.v-card-actions) {
-  border-block-start: 1px solid rgb(var(--v-theme-on-surface), 0.12);
+.confirmation-icon {
+  transition: transform var(--animation-duration-normal) var(--animation-easing-smooth);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+/* Content styling */
+.confirmation-content {
+  line-height: 1.6;
+}
+
+.confirmation-message {
+  color: rgba(var(--v-theme-on-surface), 0.87);
+  font-weight: 400;
+}
+
+.confirmation-details {
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  transition: 
+    background-color var(--animation-duration-fast) var(--animation-easing-smooth),
+    border-color var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+/* Actions styling */
+.confirmation-actions {
+  border-block-start: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.3), rgba(var(--v-theme-surface), 0.95));
+  border-radius: 0 0 16px 16px !important;
+  gap: 12px;
+}
+
+.confirmation-btn {
+  border-radius: 10px !important;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.25px;
+  min-width: 100px;
+  transition: 
+    transform var(--animation-duration-fast) var(--animation-easing-smooth),
+    box-shadow var(--animation-duration-fast) var(--animation-easing-smooth),
+    background-color var(--animation-duration-fast) var(--animation-easing-smooth);
+}
+
+.confirmation-btn--cancel {
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.23) !important;
+}
+
+.confirmation-btn--cancel:hover {
+  border-color: rgba(var(--v-theme-on-surface), 0.4) !important;
+  background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
+}
+
+.confirmation-btn--confirm {
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
+}
+
+.confirmation-btn--confirm:hover {
+  box-shadow: 0 6px 16px rgba(var(--v-theme-primary), 0.4);
+}
+
+/* Animation classes from our centralized system */
+.animate-in {
+  animation: fadeInUp var(--animation-duration-normal) var(--animation-easing-smooth);
+}
+
+.animate-pulse-subtle {
+  animation: pulse var(--animation-duration-slow) ease-in-out infinite;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive styles */
 @media (max-width: 600px) {
   .confirmation-modal :deep(.v-dialog) {
     margin: 16px;
   }
 
-  .confirmation-modal :deep(.v-card-title) {
-    padding: 16px;
+  .confirmation-header {
+    padding: 20px !important;
     font-size: 1.1rem;
   }
 
-  .confirmation-modal :deep(.v-card-text) {
-    padding: 16px;
+  .confirmation-content {
+    padding: 20px !important;
   }
 
-  .confirmation-modal :deep(.v-card-actions) {
+  .confirmation-actions {
     flex-direction: column;
-    padding: 16px;
-    gap: 8px;
+    padding: 20px !important;
+    gap: 12px;
   }
 
-  .confirmation-modal :deep(.v-card-actions .v-btn) {
-    inline-size: 100%;
+  .confirmation-btn {
+    width: 100% !important;
+    min-height: 48px;
   }
 }
 
+/* Dark mode adjustments */
+.v-theme--dark .confirmation-card {
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(12px);
+}
+
+.v-theme--dark .confirmation-details,
 .v-theme--dark .confirmation-modal :deep(.bg-grey-50) {
-  background-color: rgb(var(--v-theme-surface-variant)) !important;
+  background-color: rgba(var(--v-theme-surface-variant), 0.7) !important;
+  border-color: rgba(var(--v-theme-on-surface), 0.15);
+}
+
+.v-theme--dark .confirmation-header {
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface), 0.98), rgba(var(--v-theme-surface-variant), 0.5));
+}
+
+.v-theme--dark .confirmation-actions {
+  background: linear-gradient(135deg, rgba(var(--v-theme-surface-variant), 0.5), rgba(var(--v-theme-surface), 0.98));
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .confirmation-card,
+  .confirmation-icon,
+  .confirmation-details,
+  .confirmation-btn,
+  .animate-in,
+  .animate-pulse-subtle,
+  .hover-lift {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Focus states for accessibility */
+.confirmation-btn:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .confirmation-header,
+  .confirmation-actions {
+    border-color: rgba(var(--v-theme-on-surface), 0.4);
+  }
+  
+  .confirmation-btn--cancel {
+    border-color: rgba(var(--v-theme-on-surface), 0.6) !important;
+  }
 }
 </style>

@@ -1,4 +1,6 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem'
+
 const props = defineProps({
   notifications: {
     type: Array,
@@ -7,8 +9,9 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const { getStatusIcon, getNavigationIcon } = useIconSystem()
 
-const navigateToNotification = (notification) => {
+const navigateToNotification = notification => {
   // Navigate to notification detail page
   router.push(`/notifications/${notification.id}`)
 }
@@ -19,7 +22,7 @@ const navigateToNotification = (notification) => {
     <VCardTitle class="d-flex align-center justify-space-between">
       <div class="d-flex align-center">
         <VIcon
-          icon="fa-bell"
+          :icon="getStatusIcon('info')"
           class="me-3"
           color="primary"
         />
@@ -33,7 +36,7 @@ const navigateToNotification = (notification) => {
       >
         View All
         <VIcon
-          icon="fa-arrow-right"
+          :icon="getNavigationIcon('external')"
           size="14"
           class="ms-1"
         />
@@ -46,7 +49,7 @@ const navigateToNotification = (notification) => {
         class="empty-state pa-6 text-center"
       >
         <VIcon
-          icon="fa-bell-slash"
+          :icon="getStatusIcon('info')"
           size="48"
           color="surface-variant"
           class="mb-3"
@@ -73,7 +76,7 @@ const navigateToNotification = (notification) => {
               size="40"
             >
               <VIcon
-                icon="fa-bell"
+                :icon="getStatusIcon('info')"
                 size="20"
               />
             </VAvatar>
@@ -89,7 +92,7 @@ const navigateToNotification = (notification) => {
           
           <template #append>
             <VIcon
-              icon="fa-chevron-right"
+              :icon="getNavigationIcon('expand')"
               size="14"
               color="surface-variant"
             />
@@ -155,6 +158,7 @@ const navigateToNotification = (notification) => {
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

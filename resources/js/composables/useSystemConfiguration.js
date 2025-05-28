@@ -19,10 +19,11 @@ export function useSystemConfiguration() {
     try {
       const response = await apiCall('/api/admin/system-configurations', {
         method: 'GET',
-        params
+        params,
       })
       
       configurations.value = response.data
+      
       return response
     } catch (err) {
       error.value = err.message
@@ -41,10 +42,11 @@ export function useSystemConfiguration() {
     
     try {
       const response = await apiCall('/api/admin/system-configurations/grouped', {
-        method: 'GET'
+        method: 'GET',
       })
       
       groupedConfigurations.value = response.data
+      
       return response
     } catch (err) {
       error.value = err.message
@@ -57,16 +59,14 @@ export function useSystemConfiguration() {
   /**
    * Get a specific system configuration
    */
-  const getConfiguration = async (key) => {
+  const getConfiguration = async key => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await apiCall(`/api/admin/system-configurations/${key}`, {
-        method: 'GET'
+      return await apiCall(`/api/admin/system-configurations/${key}`, {
+        method: 'GET',
       })
-      
-      return response
     } catch (err) {
       error.value = err.message
       throw err
@@ -78,17 +78,15 @@ export function useSystemConfiguration() {
   /**
    * Create a new system configuration
    */
-  const createConfiguration = async (configurationData) => {
+  const createConfiguration = async configurationData => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await apiCall('/api/admin/system-configurations', {
+      return await apiCall('/api/admin/system-configurations', {
         method: 'POST',
-        data: configurationData
+        data: configurationData,
       })
-      
-      return response
     } catch (err) {
       error.value = err.message
       throw err
@@ -107,22 +105,19 @@ export function useSystemConfiguration() {
     try {
       // Handle file uploads
       if (configurationData instanceof FormData) {
-        const response = await apiCall(`/api/admin/system-configurations/${key}`, {
+        return await apiCall(`/api/admin/system-configurations/${key}`, {
           method: 'PUT',
           data: configurationData,
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         })
-        return response
       }
       
-      const response = await apiCall(`/api/admin/system-configurations/${key}`, {
+      return await apiCall(`/api/admin/system-configurations/${key}`, {
         method: 'PUT',
-        data: configurationData
+        data: configurationData,
       })
-      
-      return response
     } catch (err) {
       error.value = err.message
       throw err
@@ -134,16 +129,14 @@ export function useSystemConfiguration() {
   /**
    * Delete a system configuration
    */
-  const deleteConfiguration = async (key) => {
+  const deleteConfiguration = async key => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await apiCall(`/api/admin/system-configurations/${key}`, {
-        method: 'DELETE'
+      return await apiCall(`/api/admin/system-configurations/${key}`, {
+        method: 'DELETE',
       })
-      
-      return response
     } catch (err) {
       error.value = err.message
       throw err
@@ -155,19 +148,17 @@ export function useSystemConfiguration() {
   /**
    * Bulk update multiple configurations
    */
-  const bulkUpdateConfigurations = async (configurationsData) => {
+  const bulkUpdateConfigurations = async configurationsData => {
     loading.value = true
     error.value = null
     
     try {
-      const response = await apiCall('/api/admin/system-configurations/bulk-update', {
+      return await apiCall('/api/admin/system-configurations/bulk-update', {
         method: 'POST',
         data: {
-          configurations: configurationsData
-        }
+          configurations: configurationsData,
+        },
       })
-      
-      return response
     } catch (err) {
       error.value = err.message
       throw err
@@ -184,12 +175,13 @@ export function useSystemConfiguration() {
     error.value = null
     
     try {
-      const response = await apiCall('/api/system-configurations/public', {
+      console.log('Fetching public system configurations...')
+      const result = await apiCall('/api/system-configurations/public', {
         method: 'GET',
-        requiresAuth: false
+        requiresAuth: false,
       })
-      
-      return response
+      console.log('Public system configurations received:', result)
+      return result
     } catch (err) {
       error.value = err.message
       throw err
@@ -203,6 +195,7 @@ export function useSystemConfiguration() {
    */
   const uploadConfigurationFile = async (key, file) => {
     const formData = new FormData()
+
     formData.append('value', file)
     formData.append('type', 'file')
     
@@ -212,11 +205,12 @@ export function useSystemConfiguration() {
   /**
    * Validate JSON configuration value
    */
-  const validateJsonValue = (value) => {
+  const validateJsonValue = value => {
     try {
       if (value.trim()) {
         JSON.parse(value)
       }
+      
       return { valid: true, error: null }
     } catch (error) {
       return { valid: false, error: 'Invalid JSON format' }
@@ -226,62 +220,65 @@ export function useSystemConfiguration() {
   /**
    * Format configuration key for display
    */
-  const formatConfigKey = (key) => {
+  const formatConfigKey = key => {
     return key.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
+      word.charAt(0).toUpperCase() + word.slice(1),
     ).join(' ')
   }
 
   /**
    * Format group name for display
    */
-  const formatGroupName = (groupName) => {
+  const formatGroupName = groupName => {
     return groupName.charAt(0).toUpperCase() + groupName.slice(1).replace(/_/g, ' ')
   }
 
   /**
    * Get group icon
    */
-  const getGroupIcon = (groupName) => {
+  const getGroupIcon = groupName => {
     const icons = {
       dashboard: 'fas fa-tachometer-alt',
       app: 'fas fa-cog',
       login: 'fas fa-sign-in-alt',
-      default: 'fas fa-folder'
+      default: 'fas fa-folder',
     }
+    
     return icons[groupName] || icons.default
   }
 
   /**
    * Check if file is image
    */
-  const isImageFile = (filePath) => {
+  const isImageFile = filePath => {
     if (!filePath) return false
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']
+    
     return imageExtensions.some(ext => filePath.toLowerCase().endsWith(ext))
   }
 
   /**
    * Get file URL
    */
-  const getFileUrl = (filePath) => {
+  const getFileUrl = filePath => {
     return filePath ? `/storage/${filePath}` : ''
   }
 
   /**
    * Get file name from path
    */
-  const getFileName = (filePath) => {
+  const getFileName = filePath => {
     return filePath ? filePath.split('/').pop() : ''
   }
 
   /**
    * Get file accept types for input
    */
-  const getFileAccept = (key) => {
+  const getFileAccept = key => {
     if (key.includes('logo') || key.includes('background') || key.includes('photo')) {
       return 'image/*'
     }
+    
     return '*/*'
   }
 
@@ -311,6 +308,6 @@ export function useSystemConfiguration() {
     isImageFile,
     getFileUrl,
     getFileName,
-    getFileAccept
+    getFileAccept,
   }
 }

@@ -1,13 +1,14 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth.js'
+import { validationRules as rules, useFormAccessibility } from '@/composables/useFormAccessibility.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
 
-// import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
 import { useSystemConfigStore } from '@/stores/systemConfig.js'
+import authV2LoginIllustrationDark from '@images/pages/auth-v2-login-illustration-dark.png'
 import authV2LoginIllustrationLight from '@images/pages/auth-v2-login-illustration-light.png'
-import authV2LoginIllustrationDark from '@images/pages/log-in-girl.svg'
+// import authV2LoginIllustrationDark from '@images/pages/log-in-girl.svg'
 import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
@@ -23,6 +24,18 @@ definePage({
 // Authentication composable
 const { login } = useAuth()
 
+// Form accessibility composable
+const {
+  formId,
+  getFieldAttributes,
+  getErrorAttributes,
+  handleKeyboardNavigation,
+  announceToScreenReader,
+  handleFormSubmission,
+  validateField,
+  focusFirstError,
+} = useFormAccessibility()
+
 // System configuration store
 const systemConfigStore = useSystemConfigStore()
 
@@ -33,14 +46,35 @@ const form = ref({
   remember: false,
 })
 
+// Validation errors
+const errors = ref({
+  email: '',
+  password: '',
+})
+
 // UI state
 const isPasswordVisible = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+// Form validation rules
+const validationRules = {
+  email: [
+    rules.required('Email'),
+    rules.email
+  ],
+  password: [
+    rules.required('Password'),
+    rules.minLength(6, 'Password')
+  ],
+}
+
 // Form validation
 const isFormValid = computed(() => {
-  return form.value.email && form.value.password
+  return form.value.email && 
+         form.value.password && 
+         !errors.value.email && 
+         !errors.value.password
 })
 
 // Login configuration computed properties
@@ -64,24 +98,57 @@ const appTitle = computed(() => {
   return appBranding.value.name || themeConfig.app.title
 })
 
+// Handle field validation
+const handleFieldValidation = field => {
+  const isValid = validateField(field, form.value[field], validationRules[field])
+  
+  return isValid
+}
+
 // Handle login
 const handleLogin = async () => {
-  if (!isFormValid.value) return
+  // Validate each field manually
+  let formIsValid = true
+  const formErrors = {}
   
-  isLoading.value = true
-  errorMessage.value = ''
-  
-  try {
-    const result = await login(form.value)
-    
-    if (!result.success) {
-      errorMessage.value = result.error || 'Login failed'
+  for (const [field, rules] of Object.entries(validationRules)) {
+    const isValid = validateField(field, form.value[field], rules)
+    if (!isValid) {
+      formIsValid = false
+      formErrors[field] = errors.value[field]
     }
-  } catch (error) {
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isLoading.value = false
   }
+  
+  if (!formIsValid) {
+    announceToScreenReader('Please fix the errors in the form', 'assertive')
+    focusFirstError(formErrors)
+    
+    return
+  }
+  
+  // Handle form submission with accessibility feedback
+  await handleFormSubmission(async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    try {
+      const result = await login(form.value)
+      
+      if (!result.success) {
+        errorMessage.value = result.error || 'Login failed'
+        announceToScreenReader(`Login failed: ${errorMessage.value}`, 'assertive')
+        throw new Error(errorMessage.value)
+      } else {
+        announceToScreenReader('Login successful, redirecting...', 'polite')
+      }
+    } catch (error) {
+      errorMessage.value = 'An unexpected error occurred'
+      announceToScreenReader(`Error: ${errorMessage.value}`, 'assertive')
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  })
 }
 
 // Theme images
@@ -104,7 +171,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
   <!-- Custom CSS injection -->
   <component 
-    :is="'style'" 
+    is="style" 
     v-if="loginConfig.custom_css"
     v-html="loginConfig.custom_css"
   />
@@ -162,13 +229,27 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
         <VCardText>
-          <VForm @submit.prevent="handleLogin">
+          <VForm 
+            :id="formId"
+            @submit.prevent="handleLogin"
+            @keydown="handleKeyboardNavigation"
+          >
+            <!-- Screen reader announcements -->
+            <div
+              id="login-announcements"
+              aria-live="polite"
+              aria-atomic="true"
+              class="sr-only"
+            />
+            
             <!-- Error message display -->
             <VAlert
               v-if="errorMessage"
               type="error"
               class="mb-4"
               variant="tonal"
+              role="alert"
+              aria-live="assertive"
             >
               {{ errorMessage }}
             </VAlert>
@@ -178,10 +259,14 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               <VCol cols="12">
                 <AppTextField
                   v-model="form.email"
+                  v-bind="getFieldAttributes('email', 'Email is required for login')"
                   autofocus
                   label="Email Account"
                   type="email"
                   placeholder="your.email@indonet.id"
+                  :error="!!errors.email"
+                  :error-messages="errors.email"
+                  @blur="handleFieldValidation('email')"
                 />
               </VCol>
 
@@ -189,22 +274,34 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
               <VCol cols="12">
                 <AppTextField
                   v-model="form.password"
+                  v-bind="getFieldAttributes('password', 'Password is required for login')"
                   label="Password"
                   placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
-                  autocomplete="password"
+                  autocomplete="current-password"
+                  :error="!!errors.password"
+                  :error-messages="errors.password"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                  @blur="handleFieldValidation('password')"
                 />
 
                 <div class="d-flex align-center flex-wrap justify-space-between my-6">
                   <VCheckbox
                     v-model="form.remember"
                     label="Remember me"
+                    :aria-describedby="`${formId}-remember-help`"
                   />
+                  <div 
+                    :id="`${formId}-remember-help`"
+                    class="sr-only"
+                  >
+                    Keep me logged in on this device
+                  </div>
                   <RouterLink
                     to="/forgot-password"
                     class="text-primary"
+                    aria-label="Go to forgot password page"
                   >
                     Forgot Password?
                   </RouterLink>
@@ -215,9 +312,18 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   type="submit"
                   :loading="isLoading"
                   :disabled="!isFormValid"
+                  :aria-describedby="!isFormValid ? `${formId}-submit-help` : undefined"
                 >
                   Login
                 </VBtn>
+                
+                <div 
+                  v-if="!isFormValid"
+                  :id="`${formId}-submit-help`"
+                  class="sr-only"
+                >
+                  Please fill in all required fields to enable login
+                </div>
               </VCol>
 
               <!-- create account -->

@@ -1,5 +1,6 @@
 <script setup>
-import { storeToRefs, useSystemConfigStore } from 'vue';
+import { useSystemConfigStore } from '@/stores/systemConfig'
+import { storeToRefs } from 'pinia'
 
 const systemConfigStore = useSystemConfigStore()
 const { appBranding } = storeToRefs(systemConfigStore)
@@ -10,7 +11,7 @@ const { appBranding } = storeToRefs(systemConfigStore)
     <!-- 👉 Footer: left content -->
     <span class="d-flex align-center text-medium-emphasis">
       <template v-if="appBranding.footerText">
-        <span v-html="appBranding.footerText"></span>
+        <span v-html="appBranding.footerText" />
       </template>
       <template v-else>
         &copy;

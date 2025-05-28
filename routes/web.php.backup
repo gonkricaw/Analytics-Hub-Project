@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Redirect;
+use App\Http\Controllers\ContentController;
+
+// Secure embed URL route - requires authentication
+Route::middleware('auth:sanctum')->get('/app/embed/{uuid}', [ContentController::class, 'embed'])->name('content.embed');
+
+// Redirect old asset paths to new Vite build paths
+Route::get('/css/app.css', function() {
+    // Redirect to the Vite built CSS file with proper MIME type
+    return Redirect::to('/build/assets/main-Czk1McQF.css');
+});
+
+Route::get('/js/app.js', function() {
+    // Redirect to the Vite built JS file with proper MIME type
+    return Redirect::to('/build/assets/main-C-93R6vv.js');
+});
+
+// Catch-all route for SPA - exclude asset paths
+Route::get('{any?}', function() {
+    return view('application');
+})->where('any', '^(?!build|css|js|images|storage|api).*$');

@@ -10,10 +10,13 @@ const notificationStore = useNotificationStore()
 onMounted(async () => {
   try {
     await notificationStore.fetchNotifications()
+
     // Start polling for new notifications every 30 seconds
     notificationStore.startPolling(30000)
   } catch (error) {
-    console.error('Failed to load notifications:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to load notifications:', error)
+    }
   }
 })
 
@@ -22,41 +25,49 @@ onUnmounted(() => {
   notificationStore.stopPolling()
 })
 
-const removeNotification = async (notificationId) => {
+const removeNotification = async notificationId => {
   try {
     await notificationStore.removeNotification(notificationId)
   } catch (error) {
-    console.error('Failed to remove notification:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to remove notification:', error)
+    }
   }
 }
 
-const markRead = async (notificationIds) => {
+const markRead = async notificationIds => {
   try {
     // Mark multiple notifications as read
     for (const id of notificationIds) {
       await notificationStore.markAsRead(id)
     }
   } catch (error) {
-    console.error('Failed to mark notifications as read:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to mark notifications as read:', error)
+    }
   }
 }
 
-const markUnRead = async (notificationIds) => {
+const markUnRead = async notificationIds => {
   try {
     // Mark multiple notifications as unread
     for (const id of notificationIds) {
       await notificationStore.markAsUnread(id)
     }
   } catch (error) {
-    console.error('Failed to mark notifications as unread:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to mark notifications as unread:', error)
+    }
   }
 }
 
-const handleNotificationClick = async (notification) => {
+const handleNotificationClick = async notification => {
   try {
     await notificationStore.handleNotificationClick(notification)
   } catch (error) {
-    console.error('Failed to handle notification click:', error)
+    if (import.meta.env.DEV) {
+      console.error('Failed to handle notification click:', error)
+    }
   }
 }
 

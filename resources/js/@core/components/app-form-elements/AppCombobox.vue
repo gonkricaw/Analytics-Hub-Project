@@ -9,7 +9,9 @@ const elementId = computed(() => {
   const _elementIdToken = attrs.id
   const _id = useId()
   
-  return _elementIdToken ? `app-combobox-${ _elementIdToken }` : _id
+  // If an explicit ID is provided (like from accessibility composable), use it directly
+  // Otherwise, generate a prefixed ID for consistency
+  return _elementIdToken || _id
 })
 
 const label = computed(() => useAttrs().label)
