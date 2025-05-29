@@ -298,21 +298,19 @@ export class BundleOptimizer {
    * Preload critical resources
    */
   preloadCriticalResources() {
-    const criticalResources = [
-      // CSS files
-      '/css/app.css',
+    // Only preload in development or when explicitly needed
+    if (import.meta.env.DEV) {
+      const criticalResources = [
+        // Critical fonts only - CSS and JS are handled by Vite
+        '/fonts/inter-latin-400-normal.woff2',
+        '/fonts/inter-latin-600-normal.woff2',
+      ]
 
-      // Critical JavaScript
-      '/js/app.js',
-
-      // Critical fonts
-      '/fonts/inter-latin-400-normal.woff2',
-      '/fonts/inter-latin-600-normal.woff2',
-    ]
-
-    criticalResources.forEach(resource => {
-      this.preloadResource(resource)
-    })
+      criticalResources.forEach(resource => {
+        // Check if resource exists before preloading
+        this.preloadResourceIfExists(resource)
+      })
+    }
   }
 
   /**
@@ -344,6 +342,27 @@ export class BundleOptimizer {
     }
 
     document.head.appendChild(link)
+  }
+
+  /**
+   * Preload resource only if it exists (to avoid 404s)
+   */
+  preloadResourceIfExists(href, as = null) {
+    if (typeof document === 'undefined') return
+
+    // Check if resource exists before preloading
+    fetch(href, { method: 'HEAD' })
+      .then(response => {
+        if (response.ok) {
+          this.preloadResource(href, as)
+        }
+      })
+      .catch(() => {
+        // Resource doesn't exist, skip preloading
+        if (import.meta.env.DEV) {
+          console.warn(`Skipping preload for non-existent resource: ${href}`)
+        }
+      })
   }
 
   /**
@@ -621,11 +640,15 @@ export const performanceMonitor = new PerformanceMonitor()
 
 // Auto-initialize performance optimizations
 if (typeof window !== 'undefined') {
-  // Preload critical resources
-  bundleOptimizer.preloadCriticalResources()
+  // Only preload critical resources in development
+  if (import.meta.env.DEV) {
+    bundleOptimizer.preloadCriticalResources()
+  }
   
-  // Prefetch non-critical resources after load
+  // Prefetch non-critical resources after load (only in development)
   window.addEventListener('load', () => {
-    bundleOptimizer.prefetchNonCriticalResources()
+    if (import.meta.env.DEV) {
+      bundleOptimizer.prefetchNonCriticalResources()
+    }
   })
 }

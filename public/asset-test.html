@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Path Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .test-result { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Asset Path Test - XAMPP Environment</h1>
+    
+    <div class="test-result">
+        <h3>Environment Information</h3>
+        <p><strong>Current URL:</strong> <?php echo $_SERVER['REQUEST_URI'] ?? 'Unknown'; ?></p>
+        <p><strong>Document Root:</strong> <?php echo $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown'; ?></p>
+        <p><strong>Script Name:</strong> <?php echo $_SERVER['SCRIPT_NAME'] ?? 'Unknown'; ?></p>
+    </div>
+
+    <div class="test-result">
+        <h3>File Existence Tests</h3>
+        <?php
+        $baseDir = __DIR__;
+        $testFiles = [
+            'build/manifest.json',
+            'build/assets/main-yyjkLxQx.js',
+            'build/assets/main-CXjmBb7D.css',
+            'loader.css',
+            'favicon.ico'
+        ];
+        
+        foreach ($testFiles as $file) {
+            $fullPath = $baseDir . '/' . $file;
+            $exists = file_exists($fullPath);
+            $statusClass = $exists ? 'success' : 'error';
+            $statusText = $exists ? 'EXISTS' : 'NOT FOUND';
+            echo "<div class='status $statusClass'><strong>$file:</strong> $statusText</div>";
+        }
+        ?>
+    </div>
+
+    <div class="test-result">
+        <h3>Asset URL Tests</h3>
+        <div class="status">
+            <strong>Expected CSS URL:</strong> /Analytics-Hub-Project/public/build/assets/main-CXjmBb7D.css
+        </div>
+        <div class="status">
+            <strong>Expected JS URL:</strong> /Analytics-Hub-Project/public/build/assets/main-yyjkLxQx.js
+        </div>
+    </div>
+
+    <div class="test-result">
+        <h3>Manifest Content</h3>
+        <?php
+        $manifestPath = __DIR__ . '/build/manifest.json';
+        if (file_exists($manifestPath)) {
+            echo "<div class='status success'>Manifest file found</div>";
+            $content = file_get_contents($manifestPath);
+            $manifest = json_decode($content, true);
+            if ($manifest && isset($manifest['resources/js/main.js'])) {
+                $mainEntry = $manifest['resources/js/main.js'];
+                echo "<div class='status success'>";
+                echo "<strong>Main JS File:</strong> " . ($mainEntry['file'] ?? 'Not specified') . "<br>";
+                echo "<strong>CSS Files:</strong> " . (isset($mainEntry['css']) ? implode(', ', $mainEntry['css']) : 'None') . "<br>";
+                echo "</div>";
+            } else {
+                echo "<div class='status error'>Invalid manifest structure</div>";
+            }
+        } else {
+            echo "<div class='status error'>Manifest file not found</div>";
+        }
+        ?>
+    </div>
+
+    <div class="test-result">
+        <h3>Direct Asset Loading Test</h3>
+        <p>Testing if we can load the main CSS file directly:</p>
+        <link rel="stylesheet" href="/Analytics-Hub-Project/public/build/assets/main-CXjmBb7D.css" onload="document.getElementById('css-status').innerHTML='✅ CSS Loaded Successfully'" onerror="document.getElementById('css-status').innerHTML='❌ CSS Failed to Load'">
+        <div id="css-status">🔄 Loading CSS...</div>
+        
+        <p>Testing if we can load the main JS file directly:</p>
+        <script src="/Analytics-Hub-Project/public/build/assets/main-yyjkLxQx.js" onload="document.getElementById('js-status').innerHTML='✅ JS Loaded Successfully'" onerror="document.getElementById('js-status').innerHTML='❌ JS Failed to Load'"></script>
+        <div id="js-status">🔄 Loading JS...</div>
+    </div>
+</body>
+</html>

@@ -12,7 +12,8 @@ import vuetify from 'vite-plugin-vuetify'
 import svgLoader from 'vite-svg-loader'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/Analytics-Hub-Project/public/' : '/',
   plugins: [// Docs: https://github.com/posva/unplugin-vue-router
   // ℹ️ This plugin should be placed before vue plugin
     VueRouter({
@@ -40,6 +41,8 @@ export default defineConfig({
     laravel({
       input: ['resources/js/main.js'],
       refresh: true,
+      buildDirectory: 'build',
+      hotFile: mode === 'production' ? null : 'public/hot',
     }),
     vueJsx(), // Docs: https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin
     vuetify({
@@ -98,6 +101,13 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 5000,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    // Ensure assets use correct base path
+    assetsDir: 'assets',
   },
   optimizeDeps: {
     exclude: ['vuetify'],
@@ -110,4 +120,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./resources/js/tests/setup.js'],
   },
-})
+}))
