@@ -176,4 +176,114 @@ class AssetManager
             throw $e;
         }
     }
+    
+    /**
+     * Get all JavaScript modules from the manifest that should be preloaded
+     * 
+     * @return array Array of asset URLs to preload
+     */
+    public static function getPreloadableAssets()
+    {
+        $assets = [];
+        
+        try {
+            $manifestPath = public_path('build/manifest.json');
+            
+            if (!file_exists($manifestPath)) {
+                return $assets;
+            }
+            
+            $manifest = json_decode(file_get_contents($manifestPath), true);
+            
+            if ($manifest === null) {
+                return $assets;
+            }
+            
+            // Start with main entry point
+            if (isset($manifest['resources/js/main.js'])) {
+                $mainEntry = $manifest['resources/js/main.js'];
+                
+                // Add the main JS file
+                if (isset($mainEntry['file'])) {
+                    $assets[] = '/build/' . $mainEntry['file'];
+                }
+                
+                // Add CSS files
+                if (isset($mainEntry['css']) && is_array($mainEntry['css'])) {
+                    foreach ($mainEntry['css'] as $css) {
+                        $assets[] = '/build/' . $css;
+                    }
+                }
+                
+                // Add imports (limit to first 3 to avoid excessive preloading)
+                if (isset($mainEntry['imports']) && is_array($mainEntry['imports'])) {
+                    $importCount = 0;
+                    foreach ($mainEntry['imports'] as $import) {
+                        if ($importCount < 3 && isset($manifest[$import]['file'])) {
+                            $assets[] = '/build/' . $manifest[$import]['file'];
+                            $importCount++;
+                        }
+                    }
+                }
+            }
+            
+            return $assets;
+        } catch (Exception $e) {
+            Log::error('Failed to get preloadable assets: ' . $e->getMessage());
+            return $assets;
+        }
+    }
+    
+    /**
+     * Generate preload link tags for critical assets
+     * 
+     * @return string HTML string with preload link tags
+     */
+    public static function generatePreloadTags()
+    {
+        $html = '';
+        $assets = self::getPreloadableAssets();
+        
+        foreach ($assets as $asset) {
+            $type = 'script';
+            if (str_ends_with($asset, '.css')) {
+                $type = 'style';
+            }
+            
+            $html .= '<link rel="preload" href="' . $asset . '" as="' . $type . '" type="' . self::getMimeTypeForAsset($asset) . '" crossorigin>' . PHP_EOL;
+        }
+        
+        return $html;
+    }
+    
+    /**
+     * Get the MIME type for an asset based on its file extension
+     * 
+     * @param string $asset Asset path
+     * @return string MIME type
+     */
+    public static function getMimeTypeForAsset($asset)
+    {
+        if (str_ends_with($asset, '.js')) {
+            return 'application/javascript';
+        } elseif (str_ends_with($asset, '.css')) {
+            return 'text/css';
+        } elseif (str_ends_with($asset, '.json')) {
+            return 'application/json';
+        } elseif (str_ends_with($asset, '.woff2')) {
+            return 'font/woff2';
+        } elseif (str_ends_with($asset, '.woff')) {
+            return 'font/woff';
+        } elseif (str_ends_with($asset, '.ttf')) {
+            return 'font/ttf';
+        } elseif (str_ends_with($asset, '.png')) {
+            return 'image/png';
+        } elseif (str_ends_with($asset, '.jpg') || str_ends_with($asset, '.jpeg')) {
+            return 'image/jpeg';
+        } elseif (str_ends_with($asset, '.svg')) {
+            return 'image/svg+xml';
+        }
+        
+        return 'application/octet-stream';
+    }
 }

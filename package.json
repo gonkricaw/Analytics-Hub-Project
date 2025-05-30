@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:check": "vite build && post-build-check.bat",
     "build:safe": "vite build && php validate-assets.php",
+    "build:css-test": "vite build --config vite.config.css-test.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
