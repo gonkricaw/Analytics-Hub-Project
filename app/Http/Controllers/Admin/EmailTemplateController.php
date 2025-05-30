@@ -86,7 +86,7 @@ class EmailTemplateController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255|unique:idnbi_email_templates,name',
-            'type' => ['required', Rule::in(EmailTemplate::getAvailableTypes())],
+            'type' => ['required', Rule::in(array_keys(EmailTemplate::getAvailableTypes()))],
             'subject' => 'required|string|max:255',
             'html_content' => 'required|string',
             'text_content' => 'nullable|string',
@@ -171,10 +171,10 @@ class EmailTemplateController extends Controller
         $this->authorize('email-templates.update');
 
         $request->validate([
-            'name' => 'required|string|max:255|unique:idnbi_email_templates,name,' . $emailTemplate->id,
-            'type' => ['required', Rule::in(EmailTemplate::getAvailableTypes())],
-            'subject' => 'required|string|max:255',
-            'html_content' => 'required|string',
+            'name' => 'sometimes|required|string|max:255|unique:idnbi_email_templates,name,' . $emailTemplate->id,
+            'type' => ['sometimes', 'required', Rule::in(array_keys(EmailTemplate::getAvailableTypes()))],
+            'subject' => 'sometimes|required|string|max:255',
+            'html_content' => 'sometimes|required|string',
             'text_content' => 'nullable|string',
             'description' => 'nullable|string|max:1000',
             'placeholders' => 'nullable|array',
@@ -182,13 +182,17 @@ class EmailTemplateController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        // Validate that all placeholders in content are declared
-        $htmlPlaceholders = EmailTemplate::extractPlaceholders($request->html_content);
-        $textPlaceholders = EmailTemplate::extractPlaceholders($request->text_content ?? '');
-        $subjectPlaceholders = EmailTemplate::extractPlaceholders($request->subject);
+        // Validate placeholders only if content fields are being updated
+        $htmlContent = $request->has('html_content') ? $request->html_content : $emailTemplate->html_content;
+        $textContent = $request->has('text_content') ? $request->text_content : $emailTemplate->text_content;
+        $subject = $request->has('subject') ? $request->subject : $emailTemplate->subject;
+        
+        $htmlPlaceholders = EmailTemplate::extractPlaceholders($htmlContent);
+        $textPlaceholders = EmailTemplate::extractPlaceholders($textContent ?? '');
+        $subjectPlaceholders = EmailTemplate::extractPlaceholders($subject);
         
         $allContentPlaceholders = array_unique(array_merge($htmlPlaceholders, $textPlaceholders, $subjectPlaceholders));
-        $declaredPlaceholders = $request->placeholders ?? [];
+        $declaredPlaceholders = $request->has('placeholders') ? $request->placeholders : ($emailTemplate->placeholders ?? []);
 
         $undeclaredPlaceholders = array_diff($allContentPlaceholders, $declaredPlaceholders);
         if (!empty($undeclaredPlaceholders)) {
@@ -201,16 +205,18 @@ class EmailTemplateController extends Controller
             ], 422);
         }
 
-        $emailTemplate->update([
-            'name' => $request->name,
-            'type' => $request->type,
-            'subject' => $request->subject,
-            'html_content' => $request->html_content,
-            'text_content' => $request->text_content,
-            'description' => $request->description,
-            'placeholders' => $request->placeholders,
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        // Prepare update data with only provided fields
+        $updateData = [];
+        if ($request->has('name')) $updateData['name'] = $request->name;
+        if ($request->has('type')) $updateData['type'] = $request->type;
+        if ($request->has('subject')) $updateData['subject'] = $request->subject;
+        if ($request->has('html_content')) $updateData['html_content'] = $request->html_content;
+        if ($request->has('text_content')) $updateData['text_content'] = $request->text_content;
+        if ($request->has('description')) $updateData['description'] = $request->description;
+        if ($request->has('placeholders')) $updateData['placeholders'] = $request->placeholders;
+        if ($request->has('is_active')) $updateData['is_active'] = $request->boolean('is_active');
+
+        $emailTemplate->update($updateData);
 
         $emailTemplate->load('createdBy:id,name');
 
@@ -241,37 +247,19 @@ class EmailTemplateController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Email template deleted successfully'
-        ]);
+        ], 204);
     }
 
     /**
-     * Get template types and their statistics.
+     * Get template types.
      */
     public function types(): JsonResponse
     {
         $this->authorize('email-templates.view');
 
         $types = EmailTemplate::getAvailableTypes();
-        $typeStats = [];
 
-        foreach ($types as $type) {
-            $typeStats[$type] = [
-                'total' => EmailTemplate::where('type', $type)->count(),
-                'active' => EmailTemplate::where('type', $type)->where('is_active', true)->count(),
-                'has_default' => EmailTemplate::where('type', $type)
-                    ->where('name', 'Default ' . ucfirst($type) . ' Template')
-                    ->exists(),
-            ];
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'types' => $types,
-                'statistics' => $typeStats,
-            ],
-            'message' => 'Template types retrieved successfully'
-        ]);
+        return response()->json($types);
     }
 
     /**

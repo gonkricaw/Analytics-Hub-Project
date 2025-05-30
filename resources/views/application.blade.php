@@ -2,10 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" href="{{ asset('favicon.ico') }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vuexy - Vuejs Admin Dashboard Template</title>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="description" content="Indonet Analytics Hub - Analytics Dashboard for Indonet Services" />
+  <meta name="theme-color" content="#161D31" />
+  <title>{{ config('app.name', 'Indonet Analytics Hub') }}</title>
+  
+  <!-- Critical CSS for loader -->
   <link rel="stylesheet" type="text/css" href="{{ asset('loader.css') }}" />
+  <link rel="icon" href="{{ asset('favicon.ico') }}" />
+  
+  <!-- DNS Prefetch -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+  
+  <!-- Preload assets -->
+  @php
+    use App\Helpers\AssetManager;
+    echo AssetManager::generatePreloadTags();
+  @endphp
+  
+  <!-- Main application script - loads Vue -->
   @vite(['resources/js/main.js'])
 </head>
 
@@ -31,7 +48,7 @@
 />
         </svg>
       </div>
-      <div class=" loading">
+      <div class="loading">
         <div class="effect-1 effects"></div>
         <div class="effect-2 effects"></div>
         <div class="effect-3 effects"></div>
@@ -40,16 +57,26 @@
   </div>
   
   <script>
-    const loaderColor = localStorage.getItem('vuexy-initial-loader-bg') || '#FFFFFF'
+    // Initialize theme colors before content loads to prevent flash
+    const loaderColor = localStorage.getItem('vuexy-initial-loader-bg') || '#161D31'  // Default to dark mode
     const primaryColor = localStorage.getItem('vuexy-initial-loader-color') || '#7367F0'
 
-    if (loaderColor)
-      document.documentElement.style.setProperty('--initial-loader-bg', loaderColor)
     if (loaderColor)
       document.documentElement.style.setProperty('--initial-loader-bg', loaderColor)
 
     if (primaryColor)
       document.documentElement.style.setProperty('--initial-loader-color', primaryColor)
-    </script>
+    
+    // Add support for module preloading
+    const supportsModulePreload = 'supports' in document.createElement('link') && document.createElement('link').supports('rel', 'modulepreload');
+    if (!supportsModulePreload) {
+      // If browser doesn't support modulepreload, manually preload JS modules
+      document.querySelectorAll('link[rel="modulepreload"]').forEach(link => {
+        const url = link.getAttribute('href');
+        fetch(url, { mode: 'cors', credentials: 'same-origin' })
+          .catch(e => console.warn('Failed to preload:', url, e));
+      });
+    }
+  </script>
   </body>
 </html>

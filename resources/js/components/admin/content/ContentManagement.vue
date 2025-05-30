@@ -3,7 +3,10 @@
     <div class="management-header">
       <div class="header-content">
         <h1 class="page-title">
-          <i class="fas fa-file-alt" />
+          <VIcon
+            :icon="getEntityIcon('content')"
+            class="me-2"
+          />
           Content Management
         </h1>
         <p class="page-description">
@@ -17,7 +20,10 @@
           class="btn btn-primary"
           @click="showCreateModal = true"
         >
-          <i class="fas fa-plus" />
+          <VIcon
+            :icon="getActionIcon('add')"
+            class="me-1"
+          />
           Add Content
         </button>
         
@@ -26,9 +32,11 @@
           :disabled="loading"
           @click="refreshContent"
         >
-          <i
-            class="fas fa-sync"
-            :class="{ 'fa-spin': loading }"
+          <VIcon
+            :icon="getActionIcon('refresh')"
+            :class="{ 'animate-spin': loading }"
+            class="me-1"
+          />
           />
           Refresh
         </button>
@@ -50,7 +58,10 @@
           v-else-if="error"
           class="error-state"
         >
-          <i class="fas fa-exclamation-triangle" />
+          <VIcon
+            :icon="getStatusIcon('error')"
+            size="24"
+          />
           <span>{{ error }}</span>
           <button
             class="btn btn-sm btn-primary"
@@ -64,7 +75,10 @@
           v-else-if="contents.length === 0"
           class="empty-state"
         >
-          <i class="fas fa-file-alt" />
+          <VIcon
+            :icon="getEntityIcon('content')"
+            size="48"
+          />
           <h3>No Content Items</h3>
           <p>Create your first content item to get started.</p>
           <button 
@@ -72,7 +86,10 @@
             class="btn btn-primary"
             @click="showCreateModal = true"
           >
-            <i class="fas fa-plus" />
+            <VIcon
+              :icon="getActionIcon('add')"
+              class="me-1"
+            />
             Add Content
           </button>
         </div>
@@ -102,7 +119,10 @@
                   title="Edit"
                   @click.stop="editContent(content)"
                 >
-                  <i class="fas fa-edit" />
+                  <VIcon
+                    :icon="getActionIcon('edit')"
+                    size="14"
+                  />
                 </button>
                 <button 
                   v-if="canCreate"
@@ -110,7 +130,10 @@
                   title="Duplicate"
                   @click.stop="duplicateContent(content)"
                 >
-                  <i class="fas fa-copy" />
+                  <VIcon
+                    :icon="getActionIcon('copy')"
+                    size="14"
+                  />
                 </button>
                 <button 
                   v-if="canDelete"
@@ -118,7 +141,10 @@
                   title="Delete"
                   @click.stop="deleteContent(content)"
                 >
-                  <i class="fas fa-trash" />
+                  <VIcon
+                    :icon="getActionIcon('remove')"
+                    size="14"
+                  />
                 </button>
               </div>
             </div>
@@ -132,11 +158,17 @@
               </p>
               <div class="content-meta">
                 <span class="created-by">
-                  <i class="fas fa-user" />
+                  <VIcon
+                    :icon="getEntityIcon('user')"
+                    size="14"
+                  />
                   {{ content.created_by?.name || 'System' }}
                 </span>
                 <span class="created-date">
-                  <i class="fas fa-calendar" />
+                  <VIcon
+                    :icon="getStatusIcon('info')"
+                    size="14"
+                  />
                   {{ formatDate(content.created_at) }}
                 </span>
               </div>
@@ -155,14 +187,24 @@
               :disabled="currentPage === 1"
               @click="currentPage = 1"
             >
-              <i class="fas fa-angle-double-left" />
+              <VIcon
+                :icon="getNavigationIcon('left')"
+                size="14"
+              />
+              <VIcon
+                :icon="getNavigationIcon('left')"
+                size="14"
+              />
             </button>
             <button 
               class="page-btn"
               :disabled="currentPage === 1"
               @click="currentPage--"
             >
-              <i class="fas fa-angle-left" />
+              <VIcon
+                :icon="getNavigationIcon('left')"
+                size="14"
+              />
             </button>
             
             <span class="page-info">
@@ -174,14 +216,24 @@
               :disabled="currentPage === totalPages"
               @click="currentPage++"
             >
-              <i class="fas fa-angle-right" />
+              <VIcon
+                :icon="getNavigationIcon('right')"
+                size="14"
+              />
             </button>
             <button 
               class="page-btn"
               :disabled="currentPage === totalPages"
               @click="currentPage = totalPages"
             >
-              <i class="fas fa-angle-double-right" />
+              <VIcon
+                :icon="getNavigationIcon('right')"
+                size="14"
+              />
+              <VIcon
+                :icon="getNavigationIcon('right')"
+                size="14"
+              />
             </button>
           </nav>
         </div>
@@ -222,6 +274,7 @@
 
 <script setup>
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
+import { useIconSystem } from '@/composables/useIconSystem'
 import { useNotification } from '@/composables/useNotification'
 import { useAuthStore } from '@/stores/auth'
 import { useContentStore } from '@/stores/content'
@@ -233,6 +286,7 @@ import ContentPreviewModal from './ContentPreviewModal.vue'
 const contentStore = useContentStore()
 const authStore = useAuthStore()
 const { showNotification } = useNotification()
+const { getEntityIcon, getActionIcon } = useIconSystem()
 
 // Reactive data
 const loading = ref(false)
@@ -339,15 +393,15 @@ const handleContentSaved = () => {
 }
 
 const getContentTypeIcon = type => {
-  const icons = {
-    'custom': 'fas fa-file-alt',
-    'embed_url': 'fas fa-external-link-alt',
-    'file': 'fas fa-file',
-    'video': 'fas fa-video',
-    'image': 'fas fa-image',
+  const iconMappings = {
+    'custom': getEntityIcon('content'),
+    'embed_url': getNavigationIcon('external'),
+    'file': getEntityIcon('file'),
+    'video': getEntityIcon('video'),
+    'image': getEntityIcon('image'),
   }
   
-  return icons[type] || 'fas fa-file'
+  return iconMappings[type] || getEntityIcon('file')
 }
 
 const formatDate = date => {

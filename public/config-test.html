@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Test script to debug system configuration issue
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up axios defaults
+            const baseUrl = 'http://localhost:8000';
+            
+            // Add the test result to the page
+            function addResult(title, data) {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result');
+                
+                const titleEl = document.createElement('h3');
+                titleEl.textContent = title;
+                resultDiv.appendChild(titleEl);
+                
+                const dataDiv = document.createElement('pre');
+                dataDiv.textContent = JSON.stringify(data, null, 2);
+                resultDiv.appendChild(dataDiv);
+                
+                document.getElementById('results').appendChild(resultDiv);
+            }
+
+            // Test 1: Direct axios call to system configs endpoint
+            axios.get(`${baseUrl}/api/system-configurations/public`)
+                .then(response => {
+                    addResult('Direct axios call to /api/system-configurations/public', response);
+                })
+                .catch(error => {
+                    addResult('Error in direct axios call', {
+                        message: error.message,
+                        status: error.response?.status,
+                        data: error.response?.data
+                    });
+                });
+
+            // Test 2: Normalized endpoint call (without duplicate /api)
+            axios.get(`${baseUrl}/system-configurations/public`)
+                .then(response => {
+                    addResult('Normalized call to /system-configurations/public', response);
+                })
+                .catch(error => {
+                    addResult('Error in normalized call', {
+                        message: error.message,
+                        status: error.response?.status,
+                        data: error.response?.data
+                    });
+                });
+
+            // Test 3: With baseURL set
+            const axiosWithBase = axios.create({
+                baseURL: baseUrl
+            });
+            
+            axiosWithBase.get('/api/system-configurations/public')
+                .then(response => {
+                    addResult('Axios with baseURL to /api/system-configurations/public', response);
+                })
+                .catch(error => {
+                    addResult('Error in axios with baseURL', {
+                        message: error.message,
+                        status: error.response?.status,
+                        data: error.response?.data
+                    });
+                });
+                
+            // Test 4: Dynamic path construction
+            const path = '/system-configurations/public';
+            const fullPath = `/api${path}`;
+            
+            axios.get(`${baseUrl}${fullPath}`)
+                .then(response => {
+                    addResult(`Dynamic path construction: ${fullPath}`, response);
+                })
+                .catch(error => {
+                    addResult(`Error in dynamic path: ${fullPath}`, {
+                        message: error.message,
+                        status: error.response?.status,
+                        data: error.response?.data
+                    });
+                });
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .result {
+            margin-bottom: 30px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>System Configurations API Test</h1>
+    <div id="results"></div>
+</body>
+</html>

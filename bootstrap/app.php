@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(append: [
+            \App\Http\Middleware\TrackUserSessions::class,
+            \App\Http\Middleware\TrackContentVisits::class,
             \App\Http\Middleware\CheckUserActivity::class,
         ]);
     })

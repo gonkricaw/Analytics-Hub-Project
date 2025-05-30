@@ -12,7 +12,55 @@ import vuetify from 'vite-plugin-vuetify'
 import svgLoader from 'vite-svg-loader'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: '/',
+  build: {
+    // Optimize chunk size to prevent too many HTTP requests
+    chunkSizeWarningLimit: 2000,
+    // Apply compression for better performance
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production'
+      }
+    },
+    rollupOptions: {
+      output: {
+        // Ensure proper MIME types by using standard extensions
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Optimize module loading
+        manualChunks: (id) => {
+          // Group Vue ecosystem together
+          if (id.includes('node_modules/vue/') || 
+              id.includes('node_modules/vue-router/') ||
+              id.includes('node_modules/pinia/')) {
+            return 'vue-ecosystem';
+          }
+          
+          // Group Vuetify separately
+          if (id.includes('node_modules/vuetify/')) {
+            return 'vuetify';
+          }
+          
+          // Group utilities
+          if (id.includes('node_modules/lodash/') || 
+              id.includes('node_modules/date-fns/') ||
+              id.includes('node_modules/@vueuse/')) {
+            return 'utils';
+          }
+          
+          // Group charting libraries
+          if (id.includes('node_modules/apexcharts/') || 
+              id.includes('node_modules/vue3-apexcharts/')) {
+            return 'charts';
+          }
+        }
+      }
+    }
+  },
   plugins: [// Docs: https://github.com/posva/unplugin-vue-router
   // ℹ️ This plugin should be placed before vue plugin
     VueRouter({
@@ -40,6 +88,21 @@ export default defineConfig({
     laravel({
       input: ['resources/js/main.js'],
       refresh: true,
+      buildDirectory: 'build',
+      // Set proper MIME types in development
+      cors: true,
+      // Force correct MIME types for assets
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/javascript',
+      },
+      hotFile: 'public/hot',
+      // Force proper MIME types for Laravel Vite assets
+      transformOnServe: (code, devServerUrl) => {
+        return code
+          .replace(/\/resources\/js\//g, `${devServerUrl}/resources/js/`)
+          .replace(/\/resources\/styles\//g, `${devServerUrl}/resources/styles/`);
+      }
     }),
     vueJsx(), // Docs: https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin
     vuetify({
@@ -94,10 +157,9 @@ export default defineConfig({
       '@configured-variables': fileURLToPath(new URL('./resources/styles/variables/_template.scss', import.meta.url)),
       '@db': fileURLToPath(new URL('./resources/js/plugins/fake-api/handlers/', import.meta.url)),
       '@api-utils': fileURLToPath(new URL('./resources/js/plugins/fake-api/utils/', import.meta.url)),
+      // Add vuetify settings alias to fix SASS import resolution
+      'vuetify/settings': fileURLToPath(new URL('./node_modules/vuetify/lib/styles/settings', import.meta.url)),
     },
-  },
-  build: {
-    chunkSizeWarningLimit: 5000,
   },
   optimizeDeps: {
     exclude: ['vuetify'],
@@ -110,4 +172,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./resources/js/tests/setup.js'],
   },
-})
+}))

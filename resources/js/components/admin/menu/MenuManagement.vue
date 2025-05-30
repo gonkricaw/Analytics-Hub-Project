@@ -3,7 +3,10 @@
     <div class="management-header">
       <div class="header-content">
         <h1 class="page-title">
-          <i class="fas fa-bars" />
+          <VIcon
+            :icon="getNavigationIcon('menu')"
+            class="me-2"
+          />
           Menu Management
         </h1>
         <p class="page-description">
@@ -17,7 +20,10 @@
           class="btn btn-primary"
           @click="showCreateModal = true"
         >
-          <i class="fas fa-plus" />
+          <VIcon
+            :icon="getActionIcon('add')"
+            class="me-1"
+          />
           Add Menu Item
         </button>
         
@@ -26,9 +32,10 @@
           :disabled="loading"
           @click="refreshMenus"
         >
-          <i
-            class="fas fa-sync"
-            :class="{ 'fa-spin': loading }"
+          <VIcon
+            :icon="getActionIcon('refresh')"
+            :class="{ 'animate-spin': loading }"
+            class="me-1"
           />
           Refresh
         </button>
@@ -50,7 +57,10 @@
           v-else-if="error"
           class="error-state"
         >
-          <i class="fas fa-exclamation-triangle" />
+          <VIcon
+            :icon="getStatusIcon('error')"
+            size="24"
+          />
           <span>{{ error }}</span>
           <button
             class="btn btn-sm btn-primary"
@@ -64,7 +74,10 @@
           v-else-if="hierarchicalMenus.length === 0"
           class="empty-state"
         >
-          <i class="fas fa-bars" />
+          <VIcon
+            :icon="getNavigationIcon('menu')"
+            size="48"
+          />
           <h3>No menu items found</h3>
           <p>Create your first menu item to get started</p>
           <button 
@@ -72,7 +85,10 @@
             class="btn btn-primary"
             @click="showCreateModal = true"
           >
-            <i class="fas fa-plus" />
+            <VIcon
+              :icon="getActionIcon('add')"
+              class="me-1"
+            />
             Add Menu Item
           </button>
         </div>
@@ -118,6 +134,7 @@ import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import { useApi } from '@/composables/useApi'
 import { useAuth } from '@/composables/useAuth'
 import { useContent } from '@/composables/useContent'
+import { useIconSystem } from '@/composables/useIconSystem'
 import { useMenu } from '@/composables/useMenu'
 import { computed, onMounted, ref } from 'vue'
 import AdminMenuTree from './AdminMenuTree.vue'
@@ -127,6 +144,7 @@ const { user } = useAuth()
 const { apiCall } = useApi()
 const { hierarchicalMenus, loading, error, fetchMenus } = useMenu()
 const { contents, fetchContents } = useContent()
+const { getNavigationIcon, getActionIcon, getStatusIcon } = useIconSystem()
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)

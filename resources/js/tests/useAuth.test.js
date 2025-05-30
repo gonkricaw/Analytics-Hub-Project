@@ -17,9 +17,25 @@ vi.mock('axios')
 const mockedAxios = vi.mocked(axios)
 
 describe('useAuth', () => {
+  let localStorageMock
+
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
+    
+    // Create localStorage mock
+    localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    }
+    
+    // Mock localStorage
+    Object.defineProperty(global, 'localStorage', {
+      value: localStorageMock,
+    })
+    
+    localStorageMock.clear()
     
     // Reset axios defaults
     mockedAxios.defaults = {
@@ -36,7 +52,7 @@ describe('useAuth', () => {
   })
 
   afterEach(() => {
-    localStorage.clear()
+    localStorageMock.clear()
   })
 
   describe('login', () => {
@@ -72,7 +88,7 @@ describe('useAuth', () => {
 
       expect(mockedAxios.get).toHaveBeenCalledWith('/sanctum/csrf-cookie')
       expect(mockedAxios.post).toHaveBeenCalledWith('/login', credentials)
-      expect(localStorage.getItem('auth_token')).toBe('test-token')
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('auth_token', 'test-token')
       expect(result).toEqual({ success: true })
       expect(mockPush).toHaveBeenCalledWith('/')
     })
@@ -130,7 +146,7 @@ describe('useAuth', () => {
         success: false,
         error: 'Invalid credentials',
       })
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(localStorageMock.setItem).not.toHaveBeenCalled()
     })
   })
 
@@ -139,7 +155,7 @@ describe('useAuth', () => {
       const { logout } = useAuth()
       
       // Set up authenticated state
-      localStorage.setItem('auth_token', 'test-token')
+      localStorageMock.setItem('auth_token', 'test-token')
       mockedAxios.defaults.headers.common['Authorization'] = 'Bearer test-token'
       
       mockedAxios.post.mockResolvedValueOnce({ data: { success: true } })
@@ -147,7 +163,7 @@ describe('useAuth', () => {
       const result = await logout()
 
       expect(mockedAxios.post).toHaveBeenCalledWith('/logout')
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')
       expect(mockedAxios.defaults.headers.common['Authorization']).toBeUndefined()
       expect(result).toEqual({ success: true })
       expect(mockPush).toHaveBeenCalledWith('/login')
@@ -156,12 +172,12 @@ describe('useAuth', () => {
     it('should logout even if API call fails', async () => {
       const { logout } = useAuth()
       
-      localStorage.setItem('auth_token', 'test-token')
+      localStorageMock.setItem('auth_token', 'test-token')
       mockedAxios.post.mockRejectedValueOnce(new Error('Network error'))
 
       const result = await logout()
 
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')
       expect(result).toEqual({ success: true })
       expect(mockPush).toHaveBeenCalledWith('/login')
     })
@@ -330,7 +346,7 @@ describe('useAuth', () => {
     it('should initialize auth from stored token', async () => {
       const { initAuth } = useAuth()
       
-      localStorage.setItem('auth_token', 'stored-token')
+      localStorageMock.getItem.mockReturnValue('stored-token')
       
       const response = {
         data: {
@@ -356,6 +372,8 @@ describe('useAuth', () => {
     it('should return false when no token is stored', async () => {
       const { initAuth } = useAuth()
       
+      localStorageMock.getItem.mockReturnValue(null)
+      
       const result = await initAuth()
 
       expect(result).toBe(false)
@@ -365,12 +383,12 @@ describe('useAuth', () => {
     it('should handle invalid token', async () => {
       const { initAuth } = useAuth()
       
-      localStorage.setItem('auth_token', 'invalid-token')
+      localStorageMock.getItem.mockReturnValue('invalid-token')
       mockedAxios.get.mockRejectedValueOnce(new Error('Unauthorized'))
 
       const result = await initAuth()
 
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('auth_token')
       expect(mockedAxios.defaults.headers.common['Authorization']).toBeUndefined()
       expect(result).toBe(false)
     })

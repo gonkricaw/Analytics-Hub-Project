@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\EmailTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Laravel\Sanctum\Sanctum;
 
 class EmailTemplateManagementTest extends TestCase
@@ -18,11 +19,17 @@ class EmailTemplateManagementTest extends TestCase
     {
         parent::setUp();
         
-        // Create admin user
+        // Create admin user with factory
         $this->adminUser = User::factory()->create([
             'email' => 'admin@test.com',
             'name' => 'Test Admin'
         ]);
+        
+        // Define gates for email template permissions to allow access
+        Gate::define('email-templates.view', function () { return true; });
+        Gate::define('email-templates.create', function () { return true; });
+        Gate::define('email-templates.update', function () { return true; });
+        Gate::define('email-templates.delete', function () { return true; });
         
         Sanctum::actingAs($this->adminUser);
     }
@@ -39,19 +46,23 @@ class EmailTemplateManagementTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure([
+                     'success',
                      'data' => [
-                         '*' => [
-                             'id',
-                             'name',
-                             'type',
-                             'subject',
-                             'is_active',
-                             'created_at'
-                         ]
+                         'data' => [
+                             '*' => [
+                                 'id',
+                                 'name',
+                                 'type',
+                                 'subject',
+                                 'is_active',
+                                 'created_at'
+                             ]
+                         ],
+                         'total',
+                         'per_page',
+                         'current_page'
                      ],
-                     'total',
-                     'per_page',
-                     'current_page'
+                     'message'
                  ]);
     }
 
@@ -65,6 +76,7 @@ class EmailTemplateManagementTest extends TestCase
             'html_content' => '<h1>Hello {{user_name}}</h1>',
             'text_content' => 'Hello {{user_name}}',
             'description' => 'Test template description',
+            'placeholders' => ['app_name', 'user_name'], // Add the required placeholders
             'is_active' => true
         ];
 
@@ -142,7 +154,7 @@ class EmailTemplateManagementTest extends TestCase
         ]);
 
         $previewData = [
-            'sample_data' => [
+            'data' => [
                 'user_name' => 'John Doe',
                 'app_name' => 'Test App'
             ]
@@ -152,15 +164,19 @@ class EmailTemplateManagementTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonStructure([
-                     'subject',
-                     'html_content',
-                     'text_content'
+                     'success',
+                     'data' => [
+                         'subject',
+                         'html_content',
+                         'text_content'
+                     ],
+                     'message'
                  ]);
 
-        $responseData = $response->json();
-        $this->assertStringContains('John Doe', $responseData['subject']);
-        $this->assertStringContains('John Doe', $responseData['html_content']);
-        $this->assertStringContains('Test App', $responseData['html_content']);
+        $responseData = $response->json('data');
+        $this->assertStringContainsString('John Doe', $responseData['subject']);
+        $this->assertStringContainsString('John Doe', $responseData['html_content']);
+        $this->assertStringContainsString('Test App', $responseData['html_content']);
     }
 
     /** @test */

@@ -34,10 +34,11 @@ class RolesSeeder extends Seeder
                     'user_roles.view', 'user_roles.assign', 'user_roles.remove',
                     'analytics.view', 'analytics.create', 'analytics.update', 'analytics.delete', 'analytics.export',
                     'data.view', 'data.import', 'data.export',
-                    'admin.view', 'admin.logs',
+                    'admin.view', 'admin.logs', 'admin.settings',
                     'terms.view', 'terms.manage',
                     'ip_blocks.view', 'ip_blocks.manage',
-                    'invitations.view', 'invitations.send', 'invitations.manage'
+                    'invitations.view', 'invitations.send', 'invitations.manage',
+                    'email-templates.view', 'email-templates.create', 'email-templates.update', 'email-templates.delete'
                 ]
             ],
             'manager' => [

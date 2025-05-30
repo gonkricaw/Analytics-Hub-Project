@@ -341,7 +341,7 @@ const markAllAsRead = async () => {
   }
 }
 
-const markAsRead = async (notificationId) => {
+const markAsRead = async notificationId => {
   try {
     await notificationStore.markAsRead(notificationId)
   } catch (error) {
@@ -349,7 +349,7 @@ const markAsRead = async (notificationId) => {
   }
 }
 
-const markAsUnread = async (notificationId) => {
+const markAsUnread = async notificationId => {
   try {
     await notificationStore.markAsUnread(notificationId)
   } catch (error) {
@@ -357,7 +357,7 @@ const markAsUnread = async (notificationId) => {
   }
 }
 
-const removeNotification = async (notificationId) => {
+const removeNotification = async notificationId => {
   try {
     await notificationStore.removeNotification(notificationId)
     showSuccess('Notification removed')
@@ -366,28 +366,30 @@ const removeNotification = async (notificationId) => {
   }
 }
 
-const openNotificationDetail = (notification) => {
+const openNotificationDetail = notification => {
   selectedNotification.value = notification
   showDetailModal.value = true
 }
 
-const handleMarkAsRead = async (notificationId) => {
+const handleMarkAsRead = async notificationId => {
   await markAsRead(notificationId)
+
   // Update selected notification
   if (selectedNotification.value?.id === notificationId) {
     selectedNotification.value.isSeen = true
   }
 }
 
-const handleMarkAsUnread = async (notificationId) => {
+const handleMarkAsUnread = async notificationId => {
   await markAsUnread(notificationId)
+
   // Update selected notification
   if (selectedNotification.value?.id === notificationId) {
     selectedNotification.value.isSeen = false
   }
 }
 
-const handleRemoveNotification = async (notificationId) => {
+const handleRemoveNotification = async notificationId => {
   await removeNotification(notificationId)
 }
 
@@ -411,7 +413,7 @@ const applyFilters = async () => {
   await notificationStore.fetchNotifications()
 }
 
-const changePage = async (page) => {
+const changePage = async page => {
   currentPage.value = page
   await notificationStore.fetchNotifications({ page })
 }

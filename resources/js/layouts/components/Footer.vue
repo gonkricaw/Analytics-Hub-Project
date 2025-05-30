@@ -1,22 +1,35 @@
+<script setup>
+import { useSystemConfigStore } from '@/stores/systemConfig'
+import { storeToRefs } from 'pinia'
+
+const systemConfigStore = useSystemConfigStore()
+const { appBranding } = storeToRefs(systemConfigStore)
+</script>
+
 <template>
   <div class="h-100 d-flex align-center justify-md-space-between justify-center">
     <!-- 👉 Footer: left content -->
     <span class="d-flex align-center text-medium-emphasis">
-      &copy;
-      {{ new Date().getFullYear() }}
-      Made With
-      <VIcon
-        icon="tabler-heart-filled"
-        color="error"
-        size="1.25rem"
-        class="mx-1"
-      />
-      By <a
-        href="https://pixinvent.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-primary ms-1"
-      >Pixinvent</a>
+      <template v-if="appBranding.footerText">
+        <span v-html="appBranding.footerText" />
+      </template>
+      <template v-else>
+        &copy;
+        {{ new Date().getFullYear() }}
+        Made With
+        <VIcon
+          icon="tabler-heart-filled"
+          color="error"
+          size="1.25rem"
+          class="mx-1"
+        />
+        By <a
+          href="https://pixinvent.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary ms-1"
+        >Pixinvent</a>
+      </template>
     </span>
     <!-- 👉 Footer: right content -->
     <span class="d-md-flex gap-x-4 text-primary d-none">

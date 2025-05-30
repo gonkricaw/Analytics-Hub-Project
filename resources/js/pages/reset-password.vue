@@ -1,5 +1,7 @@
 <script setup>
 import { useAuth } from '@/composables/useAuth.js'
+import { useFormAccessibility } from '@/composables/useFormAccessibility.js'
+import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
@@ -23,6 +25,14 @@ const { resetPassword } = useAuth()
 const route = useRoute()
 const router = useRouter()
 
+// System configuration store
+const systemConfigStore = useSystemConfigStore()
+
+// Computed properties for dynamic branding
+const appBranding = computed(() => systemConfigStore.appBranding)
+const appTitle = computed(() => appBranding.value.name || themeConfig.app.title)
+const showLogo = computed(() => systemConfigStore.loginConfig.showLogo !== false)
+
 // Form state
 const form = ref({
   email: route.query.email || '',
@@ -38,6 +48,35 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const resetComplete = ref(false)
+
+// Form accessibility
+const {
+  formId,
+  getFieldAttributes,
+  getFieldValidation,
+  announceToScreenReader,
+  handleKeyboardNavigation,
+  handleFormSubmission,
+  isFormSubmissionAccessible,
+} = useFormAccessibility({
+  formName: 'reset-password',
+  validationRules: {
+    email: {
+      required: true,
+      email: true,
+      message: 'Please enter a valid email address',
+    },
+    password: {
+      required: true,
+      minLength: 8,
+      message: 'Password must meet all requirements',
+    },
+    password_confirmation: {
+      required: true,
+      message: 'Password confirmation is required',
+    },
+  },
+})
 
 // Password requirements
 const passwordRequirements = [
@@ -78,36 +117,47 @@ onMounted(() => {
 
 // Handle password reset
 const handlePasswordReset = async () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value || !isFormSubmissionAccessible.value) return
   
-  isLoading.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  
-  try {
-    const result = await resetPassword({
-      email: form.value.email,
-      password: form.value.password,
-      password_confirmation: form.value.password_confirmation,
-      token: form.value.token,
-    })
+  return await handleFormSubmission(async () => {
+    isLoading.value = true
+    errorMessage.value = ''
+    successMessage.value = ''
     
-    if (result.success) {
-      resetComplete.value = true
-      successMessage.value = 'Your password has been reset successfully!'
+    try {
+      const result = await resetPassword({
+        email: form.value.email,
+        password: form.value.password,
+        password_confirmation: form.value.password_confirmation,
+        token: form.value.token,
+      })
       
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        router.push('/login')
-      }, 3000)
-    } else {
-      errorMessage.value = result.error || 'Failed to reset password'
+      if (result.success) {
+        resetComplete.value = true
+        successMessage.value = 'Your password has been reset successfully!'
+        announceToScreenReader('Password reset successfully. Redirecting to login page in 3 seconds.')
+        
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          router.push('/login')
+        }, 3000)
+        
+        return { success: true }
+      } else {
+        errorMessage.value = result.error || 'Failed to reset password'
+        announceToScreenReader(`Error: ${errorMessage.value}`)
+        
+        return { success: false, error: errorMessage.value }
+      }
+    } catch (error) {
+      errorMessage.value = 'An unexpected error occurred'
+      announceToScreenReader(`Error: ${errorMessage.value}`)
+      
+      return { success: false, error: errorMessage.value }
+    } finally {
+      isLoading.value = false
     }
-  } catch (error) {
-    errorMessage.value = 'An unexpected error occurred'
-  } finally {
-    isLoading.value = false
-  }
+  })
 }
 
 // Theme images
@@ -117,10 +167,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 <template>
   <a href="javascript:void(0)">
-    <div class="auth-logo d-flex align-center gap-x-3">
+    <div 
+      v-if="showLogo"
+      class="auth-logo d-flex align-center gap-x-3"
+    >
       <VNodeRenderer :nodes="themeConfig.app.logo" />
       <h1 class="auth-title">
-        {{ themeConfig.app.title }}
+        {{ appTitle }}
       </h1>
     </div>
   </a>
@@ -166,6 +219,15 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
 
+        <!-- Screen reader announcements -->
+        <div 
+          aria-live="polite" 
+          aria-atomic="true" 
+          class="sr-only"
+        >
+          {{ successMessage || errorMessage }}
+        </div>
+
         <VCardText>
           <!-- Success state -->
           <div v-if="resetComplete">
@@ -206,7 +268,9 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           <!-- Form state -->
           <VForm
             v-else
+            :id="formId"
             @submit.prevent="handlePasswordReset"
+            @keydown="handleKeyboardNavigation"
           >
             <!-- Error message display -->
             <VAlert
@@ -227,6 +291,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   type="email"
                   readonly
                   variant="outlined"
+                  v-bind="getFieldAttributes('email')"
                 />
               </VCol>
 
@@ -237,6 +302,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   label="New Password"
                   placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
+                  v-bind="getFieldAttributes('password')"
+                  :error-messages="getFieldValidation('password', form.password).errorMessage"
                   autocomplete="new-password"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
@@ -244,20 +311,29 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
                 <!-- Password requirements -->
                 <div class="mt-3">
-                  <p class="text-body-2 mb-2 text-medium-emphasis">
+                  <p 
+                    id="password-requirements"
+                    class="text-body-2 mb-2 text-medium-emphasis"
+                  >
                     Password requirements:
                   </p>
-                  <div class="d-flex flex-column gap-2">
+                  <div 
+                    class="d-flex flex-column gap-2"
+                    role="list"
+                    aria-labelledby="password-requirements"
+                  >
                     <div
                       v-for="(requirement, index) in passwordRequirements"
                       :key="index"
                       class="d-flex align-center"
+                      role="listitem"
                     >
                       <VIcon
                         :icon="requirement.test(form.password) ? 'tabler-circle-check' : 'tabler-circle'"
                         :color="requirement.test(form.password) ? 'success' : 'disabled'"
                         size="16"
                         class="me-2"
+                        :aria-label="requirement.test(form.password) ? 'Requirement met' : 'Requirement not met'"
                       />
                       <span
                         class="text-body-2"
@@ -279,6 +355,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                   :type="isPasswordConfirmationVisible ? 'text' : 'password'"
                   autocomplete="new-password"
                   :append-inner-icon="isPasswordConfirmationVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  v-bind="getFieldAttributes('password_confirmation')"
+                  :error-messages="getFieldValidation('password_confirmation', form.password_confirmation).errorMessage"
                   @click:append-inner="isPasswordConfirmationVisible = !isPasswordConfirmationVisible"
                 />
 

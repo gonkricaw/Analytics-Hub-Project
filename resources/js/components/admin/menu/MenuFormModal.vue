@@ -1,6 +1,9 @@
 <template>
   <div
     class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    :aria-labelledby="`${formId}-title`"
     @click="handleOverlayClick"
   >
     <div
@@ -8,22 +11,36 @@
       @click.stop
     >
       <div class="modal-header">
-        <h2 class="modal-title">
-          <i class="fas fa-bars" />
+        <h2 
+          :id="`${formId}-title`"
+          class="modal-title"
+        >
+          <i :class="getNavigationIcon('menu')" />
           {{ isEditing ? 'Edit Menu Item' : 'Create Menu Item' }}
         </h2>
         <button
           class="modal-close"
+          aria-label="Close dialog"
           @click="$emit('cancel')"
         >
-          <i class="fas fa-times" />
+          <i :class="getActionIcon('close')" />
         </button>
       </div>
       
       <form
+        :id="formId"
         class="modal-form"
         @submit.prevent="handleSubmit"
+        @keydown="handleKeyboardNavigation"
       >
+        <!-- Screen reader announcements -->
+        <div
+          id="menu-form-announcements"
+          aria-live="polite"
+          aria-atomic="true"
+          class="sr-only"
+        />
+        
         <div class="modal-body">
           <!-- Basic Information -->
           <div class="form-section">
@@ -39,15 +56,18 @@
               <input
                 id="name"
                 v-model="form.name"
+                v-bind="getFieldAttributes('name', 'The display name for this menu item')"
                 type="text"
                 class="form-control"
                 :class="{ 'is-invalid': errors.name }"
                 placeholder="Enter menu name"
                 required
+                @blur="handleFieldValidation('name')"
               >
               <div
                 v-if="errors.name"
                 class="invalid-feedback"
+                role="alert"
               >
                 {{ errors.name }}
               </div>
@@ -62,11 +82,16 @@
                 <input
                   id="icon"
                   v-model="form.icon"
+                  v-bind="getFieldAttributes('icon', 'Font Awesome icon class for the menu item')"
                   type="text"
                   class="form-control"
                   placeholder="fas fa-home"
+                  :aria-describedby="`${formId}-icon-help`"
                 >
-                <div class="icon-preview">
+                <div 
+                  class="icon-preview"
+                  :aria-label="`Icon preview: ${form.icon || 'No icon selected'}`"
+                >
                   <i
                     v-if="form.icon"
                     :class="form.icon"
@@ -77,7 +102,10 @@
                   >No icon</span>
                 </div>
               </div>
-              <small class="form-text">
+              <small 
+                :id="`${formId}-icon-help`"
+                class="form-text"
+              >
                 Use Font Awesome classes (e.g., "fas fa-home", "fas fa-user")
               </small>
             </div>
@@ -132,60 +160,83 @@
             </h3>
             
             <div class="form-group">
-              <label class="form-label required">Menu Type</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input
-                    v-model="form.type"
-                    type="radio"
-                    value="route"
-                  >
-                  <span class="radio-label">
-                    <i class="fas fa-link" />
-                    Internal Route
-                  </span>
-                  <small>Link to a page within the application</small>
-                </label>
-                
-                <label class="radio-option">
-                  <input
-                    v-model="form.type"
-                    type="radio"
-                    value="url"
-                  >
-                  <span class="radio-label">
-                    <i class="fas fa-external-link-alt" />
-                    External URL
-                  </span>
-                  <small>Link to an external website</small>
-                </label>
-                
-                <label class="radio-option">
-                  <input
-                    v-model="form.type"
-                    type="radio"
-                    value="content"
-                  >
-                  <span class="radio-label">
-                    <i class="fas fa-file-alt" />
-                    Content Page
-                  </span>
-                  <small>Link to a managed content page</small>
-                </label>
-                
-                <label class="radio-option">
-                  <input
-                    v-model="form.type"
-                    type="radio"
-                    value="embed"
-                  >
-                  <span class="radio-label">
-                    <i class="fas fa-code" />
-                    Embedded Content
-                  </span>
-                  <small>Open embedded content in a new window</small>
-                </label>
-              </div>
+              <fieldset>
+                <legend class="form-label required">
+                  Menu Type
+                </legend>
+                <div 
+                  class="radio-group"
+                  role="radiogroup"
+                  aria-labelledby="menu-type-legend"
+                  :aria-describedby="`${formId}-type-help`"
+                >
+                  <label class="radio-option">
+                    <input
+                      v-model="form.type"
+                      type="radio"
+                      value="route"
+                      name="menu-type"
+                      aria-describedby="route-description"
+                    >
+                    <span class="radio-label">
+                      <i :class="getNavigationIcon('internal')" />
+                      Internal Route
+                    </span>
+                    <small id="route-description">Link to a page within the application</small>
+                  </label>
+                  
+                  <label class="radio-option">
+                    <input
+                      v-model="form.type"
+                      type="radio"
+                      value="url"
+                      name="menu-type"
+                      aria-describedby="url-description"
+                    >
+                    <span class="radio-label">
+                      <i :class="getNavigationIcon('external')" />
+                      External URL
+                    </span>
+                    <small id="url-description">Link to an external website</small>
+                  </label>
+                  
+                  <label class="radio-option">
+                    <input
+                      v-model="form.type"
+                      type="radio"
+                      value="content"
+                      name="menu-type"
+                      aria-describedby="content-description"
+                    >
+                    <span class="radio-label">
+                      <i :class="getEntityIcon('content')" />
+                      Content Page
+                    </span>
+                    <small id="content-description">Link to a managed content page</small>
+                  </label>
+                  
+                  <label class="radio-option">
+                    <input
+                      v-model="form.type"
+                      type="radio"
+                      value="embed"
+                      name="menu-type"
+                      aria-describedby="embed-description"
+                    >
+                    <span class="radio-label">
+                      <i :class="getEntityIcon('code')" />
+                      Embedded Content
+                    </span>
+                    <small id="embed-description">Open embedded content in a new window</small>
+                  </label>
+                </div>
+                <div 
+                  :id="`${formId}-type-help`"
+                  class="sr-only"
+                >
+                  Choose how this menu item should behave when clicked
+                </div>
+              </fieldset>
             </div>
             
             <!-- Route/URL Input -->
@@ -202,15 +253,18 @@
               <input
                 id="route_or_url"
                 v-model="form.route_or_url"
+                v-bind="getFieldAttributes('route_or_url', form.type === 'route' ? 'Application route path' : 'External website URL')"
                 type="text"
                 class="form-control"
                 :class="{ 'is-invalid': errors.route_or_url }"
                 :placeholder="form.type === 'route' ? '/dashboard' : 'https://example.com'"
                 required
+                @blur="handleFieldValidation('route_or_url')"
               >
               <div
                 v-if="errors.route_or_url"
                 class="invalid-feedback"
+                role="alert"
               >
                 {{ errors.route_or_url }}
               </div>
@@ -228,9 +282,11 @@
               <select
                 id="content_id"
                 v-model="form.content_id"
+                v-bind="getFieldAttributes('content_id', 'Select content to link to this menu item')"
                 class="form-control"
                 :class="{ 'is-invalid': errors.content_id }"
                 required
+                @blur="handleFieldValidation('content_id')"
               >
                 <option value="">
                   Select content...
@@ -246,6 +302,7 @@
               <div
                 v-if="errors.content_id"
                 class="invalid-feedback"
+                role="alert"
               >
                 {{ errors.content_id }}
               </div>
@@ -253,8 +310,10 @@
               <div
                 v-if="form.type === 'embed'"
                 class="form-note embed-note"
+                role="note"
+                aria-live="polite"
               >
-                <i class="fas fa-info-circle" />
+                <i :class="getStatusIcon('info')" />
                 <span>
                   Only content with embedded URLs can be used for embed menu items.
                 </span>
@@ -292,6 +351,7 @@
           <button
             type="button"
             class="btn btn-secondary"
+            aria-label="Cancel and close dialog"
             @click="$emit('cancel')"
           >
             Cancel
@@ -300,17 +360,28 @@
             type="submit"
             class="btn btn-primary"
             :disabled="!isFormValid || saving"
+            :aria-describedby="!isFormValid ? `${formId}-submit-help` : undefined"
           >
             <i
               v-if="saving"
-              class="fas fa-spinner fa-spin"
+              :class="getStatusIcon('loading')"
+              aria-hidden="true"
             />
             <i
               v-else
-              class="fas fa-save"
+              :class="getActionIcon('save')"
+              aria-hidden="true"
             />
             {{ saving ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}
           </button>
+          
+          <div 
+            v-if="!isFormValid"
+            :id="`${formId}-submit-help`"
+            class="sr-only"
+          >
+            Please fill in all required fields to save the menu item
+          </div>
         </div>
       </form>
     </div>
@@ -318,6 +389,8 @@
 </template>
 
 <script setup>
+import { validationRules as rules, useFormAccessibility } from '@/composables/useFormAccessibility.js'
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { computed, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -337,6 +410,21 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'cancel'])
 
+// Form accessibility composable
+const {
+  formId,
+  getFieldAttributes,
+  getErrorAttributes,
+  handleKeyboardNavigation,
+  announceToScreenReader,
+  handleFormSubmission,
+  validateField,
+  focusFirstError,
+} = useFormAccessibility()
+
+// Icon system
+const { getStatusIcon, getActionIcon, getNavigationIcon, getEntityIcon } = useIconSystem()
+
 const saving = ref(false)
 const errors = ref({})
 
@@ -350,6 +438,43 @@ const form = ref({
   content_id: '',
   role_permissions_required: '',
 })
+
+// Helper validation functions
+const validateRouteOrUrl = (value) => {
+  const formData = form.value
+  if ((formData.type === 'route' || formData.type === 'url') && !value) {
+    return 'This field is required'
+  }
+  if (formData.type === 'route' && value && !value.startsWith('/')) {
+    return 'Route path must start with /'
+  }
+  if (formData.type === 'url' && value && !isValidUrl(value)) {
+    return 'Please enter a valid URL'
+  }
+  return true
+}
+
+const validateContentId = (value) => {
+  const formData = form.value
+  if ((formData.type === 'content' || formData.type === 'embed') && !value) {
+    return 'Content selection is required'
+  }
+  return true
+}
+
+// Form validation rules
+const validationRules = {
+  name: [
+    rules.required('Menu name'),
+    rules.minLength(2, 'Menu name')
+  ],
+  route_or_url: [
+    validateRouteOrUrl
+  ],
+  content_id: [
+    validateContentId
+  ],
+}
 
 const isEditing = computed(() => !!props.menu?.id)
 
@@ -365,86 +490,85 @@ const filteredContentOptions = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  if (!form.value.name.trim()) return false
+  return form.value.name.trim() && 
+         !errors.value.name &&
+         !errors.value.route_or_url &&
+         !errors.value.content_id
+})
+
+// Handle field validation
+const handleFieldValidation = field => {
+  // Clear previous error
+  errors.value[field] = ''
   
-  if (form.value.type === 'route' || form.value.type === 'url') {
-    return !!form.value.route_or_url.trim()
-  }
+  const rules = validationRules[field]
+  if (!rules) return true
   
-  if (form.value.type === 'content' || form.value.type === 'embed') {
-    return !!form.value.content_id
+  // Validate each rule for this field
+  for (const rule of rules) {
+    const result = rule(form.value[field])
+    if (result !== true) {
+      errors.value[field] = result
+      announceToScreenReader(`${field} field: ${result}`, 'assertive')
+      return false
+    }
   }
   
   return true
-})
+}
 
 const handleOverlayClick = () => {
   emit('cancel')
 }
 
 const handleSubmit = async () => {
-  if (!isFormValid.value || saving.value) return
+  // Validate each field manually
+  let formIsValid = true
+  const formErrors = {}
   
-  errors.value = {}
-  saving.value = true
+  for (const [field, rules] of Object.entries(validationRules)) {
+    if (!handleFieldValidation(field)) {
+      formIsValid = false
+      formErrors[field] = errors.value[field]
+    }
+  }
   
-  try {
-    // Validate form
-    const validationErrors = validateForm()
-    if (Object.keys(validationErrors).length > 0) {
-      errors.value = validationErrors
+  if (!formIsValid) {
+    announceToScreenReader('Please fix the errors in the form', 'assertive')
+    focusFirstError(formErrors)
+    
+    return
+  }
+  
+  // Handle form submission with accessibility feedback
+  await handleFormSubmission(async () => {
+    saving.value = true
+    
+    try {
+      // Prepare form data
+      const formData = {
+        name: form.value.name.trim(),
+        icon: form.value.icon.trim() || null,
+        parent_id: form.value.parent_id || null,
+        order: form.value.order || null,
+        type: form.value.type,
+        route_or_url: (form.value.type === 'route' || form.value.type === 'url') 
+          ? form.value.route_or_url.trim() : null,
+        content_id: (form.value.type === 'content' || form.value.type === 'embed') 
+          ? form.value.content_id : null,
+        role_permissions_required: form.value.role_permissions_required.trim() || null,
+      }
       
-      return
+      announceToScreenReader(`${isEditing.value ? 'Updating' : 'Creating'} menu item...`, 'polite')
+      emit('save', formData)
+      announceToScreenReader(`Menu item ${isEditing.value ? 'updated' : 'created'} successfully`, 'polite')
+    } catch (error) {
+      announceToScreenReader(`Error ${isEditing.value ? 'updating' : 'creating'} menu item`, 'assertive')
+      throw error
+    } finally {
+      saving.value = false
     }
-    
-    // Prepare form data
-    const formData = {
-      name: form.value.name.trim(),
-      icon: form.value.icon.trim() || null,
-      parent_id: form.value.parent_id || null,
-      order: form.value.order || null,
-      type: form.value.type,
-      route_or_url: (form.value.type === 'route' || form.value.type === 'url') 
-        ? form.value.route_or_url.trim() : null,
-      content_id: (form.value.type === 'content' || form.value.type === 'embed') 
-        ? form.value.content_id : null,
-      role_permissions_required: form.value.role_permissions_required.trim() || null,
-    }
-    
-    emit('save', formData)
-  } finally {
-    saving.value = false
-  }
-}
-
-const validateForm = () => {
-  const validationErrors = {}
-  
-  if (!form.value.name.trim()) {
-    validationErrors.name = 'Menu name is required'
-  }
-  
-  if (form.value.type === 'route') {
-    if (!form.value.route_or_url.trim()) {
-      validationErrors.route_or_url = 'Route path is required'
-    } else if (!form.value.route_or_url.startsWith('/')) {
-      validationErrors.route_or_url = 'Route path must start with /'
-    }
-  }
-  
-  if (form.value.type === 'url') {
-    if (!form.value.route_or_url.trim()) {
-      validationErrors.route_or_url = 'URL is required'
-    } else if (!isValidUrl(form.value.route_or_url)) {
-      validationErrors.route_or_url = 'Please enter a valid URL'
-    }
-  }
-  
-  if ((form.value.type === 'content' || form.value.type === 'embed') && !form.value.content_id) {
-    validationErrors.content_id = 'Content selection is required'
-  }
-  
-  return validationErrors
+  })
 }
 
 const isValidUrl = string => {

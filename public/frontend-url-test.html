@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend URL Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Frontend URL Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Setup axios like in the useAuth composable
+        axios.defaults.withCredentials = true;
+        axios.defaults.baseURL = '/api';
+        
+        // Create separate axios instance for non-API routes
+        const baseAxios = axios.create({
+            withCredentials: true,
+            baseURL: '/'
+        });
+        
+        const results = document.getElementById('results');
+        
+        function addResult(message, isError = false) {
+            const div = document.createElement('div');
+            div.style.color = isError ? 'red' : 'green';
+            div.style.margin = '10px 0';
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        async function testEndpoints() {
+            addResult('<h2>Testing Endpoints...</h2>');
+            
+            // Test 1: CSRF endpoint with baseAxios (should work)
+            try {
+                addResult('Testing CSRF endpoint with baseAxios...');
+                const csrfResponse = await baseAxios.get('/sanctum/csrf-cookie');
+                addResult(`✅ CSRF with baseAxios: SUCCESS (${csrfResponse.status})`);
+            } catch (error) {
+                addResult(`❌ CSRF with baseAxios: FAILED (${error.response?.status || 'Network Error'})`, true);
+            }
+            
+            // Test 2: CSRF endpoint with regular axios (should fail with 404)
+            try {
+                addResult('Testing CSRF endpoint with regular axios (should fail)...');
+                const csrfResponse = await axios.get('/sanctum/csrf-cookie');
+                addResult(`⚠️ CSRF with axios: Unexpected success (${csrfResponse.status})`, true);
+            } catch (error) {
+                addResult(`✅ CSRF with axios: Expected failure (${error.response?.status || 'Network Error'}) - This confirms the fix is needed`);
+            }
+            
+            // Test 3: Login endpoint (should get 422 validation error for empty data)
+            try {
+                addResult('Testing login endpoint with empty data...');
+                const loginResponse = await axios.post('/login', {});
+                addResult(`⚠️ Login: Unexpected success (${loginResponse.status})`, true);
+            } catch (error) {
+                if (error.response?.status === 422) {
+                    addResult(`✅ Login endpoint: Accessible (422 validation error as expected)`);
+                } else if (error.response?.status === 404) {
+                    addResult(`❌ Login endpoint: 404 Not Found - Server may not be running`, true);
+                } else {
+                    addResult(`⚠️ Login endpoint: ${error.response?.status || 'Network Error'}`, true);
+                }
+            }
+            
+            addResult('<h3>Test Results Summary:</h3>');
+            addResult('✅ = Working correctly');
+            addResult('❌ = Issue found');
+            addResult('⚠️ = Unexpected result');
+        }
+        
+        // Run tests when page loads
+        testEndpoints();
+    </script>
+</body>
+</html>

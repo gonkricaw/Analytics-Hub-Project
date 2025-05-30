@@ -24,7 +24,10 @@
             v-if="canReorder"
             class="drag-handle"
           >
-            <i class="fas fa-grip-vertical" />
+            <VIcon
+              :icon="getActionIcon('move')"
+              size="14"
+            />
           </div>
           
           <!-- Expand/Collapse Button -->
@@ -33,8 +36,9 @@
             class="expand-btn"
             @click="toggleExpanded(item.id)"
           >
-            <i
-              class="fas fa-chevron-right"
+            <VIcon 
+              :icon="getNavigationIcon('expand')"
+              size="14"
               :class="{ 'rotated': expandedItems.includes(item.id) }"
             />
           </button>
@@ -49,9 +53,11 @@
               v-if="item.icon"
               :class="item.icon"
             />
-            <i
+            <VIcon
               v-else
-              class="fas fa-circle menu-bullet"
+              :icon="getStatusIcon('default')"
+              size="8"
+              class="menu-bullet"
             />
           </div>
           
@@ -85,21 +91,30 @@
               v-if="item.type === 'url'"
               class="status-badge external"
             >
-              <i class="fas fa-external-link-alt" />
+              <VIcon
+                :icon="getNavigationIcon('external')"
+                size="12"
+              />
               External
             </span>
             <span
               v-if="item.content?.type === 'embed'"
               class="status-badge embed"
             >
-              <i class="fas fa-code" />
+              <VIcon
+                :icon="getEntityIcon('code')"
+                size="12"
+              />
               Embed
             </span>
             <span
               v-if="item.role_permissions_required"
               class="status-badge protected"
             >
-              <i class="fas fa-lock" />
+              <VIcon
+                :icon="getStatusIcon('warning')"
+                size="12"
+              />
               Protected
             </span>
           </div>
@@ -112,7 +127,10 @@
               title="Edit menu item"
               @click="$emit('edit', item)"
             >
-              <i class="fas fa-edit" />
+              <VIcon
+                :icon="getActionIcon('edit')"
+                size="14"
+              />
             </button>
             
             <button 
@@ -121,7 +139,10 @@
               title="Delete menu item"
               @click="$emit('delete', item)"
             >
-              <i class="fas fa-trash" />
+              <VIcon
+                :icon="getActionIcon('remove')"
+                size="14"
+              />
             </button>
             
             <button 
@@ -130,7 +151,10 @@
               title="Add child menu item"
               @click="$emit('add-child', item)"
             >
-              <i class="fas fa-plus" />
+              <VIcon
+                :icon="getActionIcon('add')"
+                size="14"
+              />
             </button>
           </div>
         </div>
@@ -157,6 +181,7 @@
 </template>
 
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem'
 import { ref } from 'vue'
 
 const props = defineProps({
@@ -183,6 +208,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['edit', 'delete', 'add-child', 'reorder'])
+
+const { getNavigationIcon, getActionIcon, getStatusIcon } = useIconSystem()
 
 const expandedItems = ref([])
 const draggingItem = ref(null)

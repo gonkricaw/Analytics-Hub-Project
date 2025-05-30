@@ -1,50 +1,166 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem'
+import { useSystemConfigStore } from '@/stores/systemConfig'
+import { storeToRefs } from 'pinia'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/vue'
+import { computed, onMounted, ref } from 'vue'
 
-const props = defineProps({
-  slides: {
-    type: Array,
-    default: () => [],
-  },
-  settings: {
-    type: Object,
-    default: () => ({
-      autoplay: true,
-      interval: 5000,
-      indicators: true,
-      controls: true,
-    }),
-  },
-})
+const systemConfigStore = useSystemConfigStore()
+const { dashboardConfig } = storeToRefs(systemConfigStore)
+const { getStatusIcon, getNavigationIcon, getEntityIcon } = useIconSystem()
+
+const isLoading = ref(true)
+const error = ref(null)
 
 const modules = [Navigation, Pagination, Autoplay]
 
+// Default slides for fallback
+const defaultSlides = [
+  {
+    id: 1,
+    title: 'Welcome to Indonet Analytics Hub',
+    subtitle: 'Comprehensive dashboard for real-time analytics and insights',
+    image: '/images/hero/hero-bg-1.jpg',
+    button_text: 'Get Started',
+    button_link: '#dashboard',
+  },
+  {
+    id: 2,
+    title: 'Real-time Data Analytics',
+    subtitle: 'Monitor your network performance with advanced analytics tools',
+    image: '/images/hero/hero-bg-2.jpg',
+    button_text: 'View Analytics',
+    button_link: '#analytics',
+  },
+]
+
+const slides = computed(() => {
+  const configSlides = dashboardConfig.value.jumbotron.slides
+  
+  return Array.isArray(configSlides) && configSlides.length > 0 ? configSlides : defaultSlides
+})
+
+const settings = computed(() => dashboardConfig.value.jumbotron.settings)
+const isEnabled = computed(() => dashboardConfig.value.jumbotron.enabled)
+
 const swiperOptions = computed(() => ({
   modules,
-  autoplay: props.settings.autoplay ? {
-    delay: props.settings.interval,
+  autoplay: settings.value.autoplay ? {
+    delay: settings.value.interval,
     disableOnInteraction: false,
   } : false,
-  pagination: props.settings.indicators ? {
+  pagination: settings.value.indicators ? {
     clickable: true,
     dynamicBullets: true,
   } : false,
-  navigation: props.settings.controls,
+  navigation: settings.value.controls,
   loop: true,
   effect: 'fade',
   fadeEffect: {
     crossFade: true,
   },
 }))
+
+onMounted(async () => {
+  try {
+    // Ensure configurations are loaded
+    if (Object.keys(systemConfigStore.configurations).length === 0) {
+      await systemConfigStore.fetchConfigurations()
+    }
+  } catch (err) {
+    error.value = 'Failed to load jumbotron configuration'
+    console.error('JumbotronWidget: Failed to load configuration:', err)
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="jumbotron-widget">
+    <!-- Loading State -->
+    <div
+      v-if="isLoading"
+      class="jumbotron-loading"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
+        <div class="text-center">
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="48"
+          />
+          <p class="text-body-1 mt-4 text-medium-emphasis">
+            Loading carousel...
+          </p>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Error State -->
+    <div
+      v-else-if="error"
+      class="jumbotron-error"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
+        <div class="text-center">
+          <VIcon
+            :icon="getStatusIcon('error')"
+            size="48"
+            color="error"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            {{ error }}
+          </p>
+          <VBtn
+            color="primary"
+            variant="outlined"
+            class="mt-4"
+            @click="systemConfigStore.refreshCache()"
+          >
+            Retry
+          </VBtn>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Disabled State -->
+    <div
+      v-else-if="!isEnabled"
+      class="jumbotron-disabled"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
+        <div class="text-center">
+          <VIcon
+            :icon="getStatusIcon('warning')"
+            size="48"
+            color="secondary"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            Jumbotron carousel is currently disabled
+          </p>
+        </div>
+      </VCard>
+    </div>
+
+    <!-- Main Carousel -->
     <Swiper
+      v-else-if="slides.length > 0"
       v-bind="swiperOptions"
       class="jumbotron-carousel"
     >
@@ -91,7 +207,7 @@ const swiperOptions = computed(() => ({
                   >
                     {{ slide.button_text }}
                     <VIcon
-                      icon="fa-arrow-right"
+                      :icon="getNavigationIcon('external')"
                       class="ms-2"
                     />
                   </VBtn>
@@ -102,72 +218,96 @@ const swiperOptions = computed(() => ({
         </div>
       </SwiperSlide>
     </Swiper>
+
+    <!-- No Slides State -->
+    <div
+      v-else
+      class="jumbotron-empty"
+    >
+      <VCard
+        class="h-100 d-flex align-center justify-center"
+        height="400"
+      >
+        <div class="text-center">
+          <VIcon
+            :icon="getEntityIcon('image')"
+            size="48"
+            color="secondary"
+            class="mb-4"
+          />
+          <p class="text-body-1 text-medium-emphasis">
+            No carousel slides configured
+          </p>
+        </div>
+      </VCard>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .jumbotron-widget {
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 10%);
 }
 
 .jumbotron-carousel {
-  height: 400px;
-  
+  block-size: 400px;
+
   :deep(.swiper-pagination) {
-    bottom: 20px;
-    
+    inset-block-end: 20px;
+
     .swiper-pagination-bullet {
-      background: rgba(255, 255, 255, 0.7);
-      width: 12px;
-      height: 12px;
-      margin: 0 8px;
-      
+      background: rgba(255, 255, 255, 70%);
+      block-size: 12px;
+      inline-size: 12px;
+      margin-block: 0;
+      margin-inline: 8px;
+
       &.swiper-pagination-bullet-active {
         background: white;
         transform: scale(1.2);
       }
     }
   }
-  
+
   :deep(.swiper-button-next),
   :deep(.swiper-button-prev) {
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    width: 44px;
-    height: 44px;
     border-radius: 50%;
     backdrop-filter: blur(10px);
-    
-    &:after {
+    background: rgba(255, 255, 255, 20%);
+    block-size: 44px;
+    color: white;
+    inline-size: 44px;
+
+    &::after {
       font-size: 18px;
       font-weight: bold;
     }
-    
+
     &:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 30%);
     }
   }
 }
 
 .jumbotron-slide {
-  height: 400px;
+  block-size: 400px;
 }
 
 .slide-background {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  block-size: 100%;
+  inline-size: 100%;
 }
 
 .slide-content {
-  height: 100%;
+  block-size: 100%;
 }
 
 .slide-text {
@@ -175,23 +315,23 @@ const swiperOptions = computed(() => ({
 }
 
 .slide-title {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   animation: fadeInUp 0.8s ease-out;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 50%);
 }
 
 .slide-subtitle {
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  opacity: 0.9;
   animation: fadeInUp 0.8s ease-out 0.2s both;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 50%);
 }
 
 .slide-button {
   animation: fadeInUp 0.8s ease-out 0.4s both;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 20%);
+
   &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 30%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -200,6 +340,7 @@ const swiperOptions = computed(() => ({
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -208,29 +349,30 @@ const swiperOptions = computed(() => ({
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
     opacity: 0;
+    transform: translateY(50px);
   }
+
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
   .jumbotron-carousel {
-    height: 300px;
+    block-size: 300px;
   }
-  
+
   .jumbotron-slide {
-    height: 300px;
+    block-size: 300px;
   }
-  
+
   .slide-title {
     font-size: 1.75rem !important;
   }
-  
+
   .slide-subtitle {
     font-size: 1.1rem !important;
   }

@@ -1,4 +1,5 @@
 <script setup>
+import { useSystemConfigStore } from '@/stores/systemConfig.js'
 import keyboard from '@images/svg/keyboard.svg'
 import paper from '@images/svg/paper-send.svg'
 import rocket from '@images/svg/rocket.svg'
@@ -12,6 +13,13 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
+
+// System configuration store
+const systemConfigStore = useSystemConfigStore()
+
+// Computed properties for dynamic branding
+const appBranding = computed(() => systemConfigStore.appBranding)
+const appTitle = computed(() => appBranding.value.name || themeConfig.app.title)
 
 const dialogVisibleUpdate = val => {
   emit('update:isDialogVisible', val)
@@ -51,7 +59,7 @@ const referAndEarnSteps = [
           Refer & Earn
         </h4>
         <p class="text-body-1 mb-6 text-center">
-          Invite your friend to <span class="text-capitalize">{{ themeConfig.app.title }}</span>, if they sign up, you and your friend will get 30 days free trial
+          Invite your friend to <span class="text-capitalize">{{ appTitle }}</span>, if they sign up, you and your friend will get 30 days free trial
         </p>
 
         <VRow class="text-center mt-8">

@@ -89,6 +89,12 @@ class PermissionsSeeder extends Seeder
             ['name' => 'content.delete', 'display_name' => 'Delete Content', 'description' => 'Delete content items', 'group' => 'content'],
             ['name' => 'content.manage', 'display_name' => 'Manage Content', 'description' => 'Full content management capabilities', 'group' => 'content'],
             ['name' => 'content.publish', 'display_name' => 'Publish Content', 'description' => 'Publish and unpublish content', 'group' => 'content'],
+
+            // Email Template Management Permissions
+            ['name' => 'email-templates.view', 'display_name' => 'View Email Templates', 'description' => 'View email templates', 'group' => 'email_templates'],
+            ['name' => 'email-templates.create', 'display_name' => 'Create Email Templates', 'description' => 'Create new email templates', 'group' => 'email_templates'],
+            ['name' => 'email-templates.update', 'display_name' => 'Update Email Templates', 'description' => 'Update email templates', 'group' => 'email_templates'],
+            ['name' => 'email-templates.delete', 'display_name' => 'Delete Email Templates', 'description' => 'Delete email templates', 'group' => 'email_templates'],
         ];
 
         foreach ($permissions as $permission) {

@@ -1,10 +1,25 @@
-body {
-  margin: 0;
+/*
+ * Indonet Analytics Hub Initial Loader CSS
+ * Optimized for performance and dark mode support
+ */
+
+/* Set defaults for light/dark mode */
+:root {
+  --initial-loader-bg: #f8f8f8; /* Light mode background */
+  --initial-loader-color: #7367f0; /* Brand primary color */
+  --initial-logo-color: #7367f0; /* Logo color */
+}
+
+/* Dark mode prefers-color-scheme support as fallback */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --initial-loader-bg: #161d31; /* Dark mode background */
+    --initial-loader-color: #7367f0; /* Brand primary color */
+  }
 }
 
 html {
-  overflow-x: hidden;
-  overflow-y: scroll;
+  overflow: hidden scroll;
 }
 
 #loading-bg {
@@ -13,7 +28,7 @@ html {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--initial-loader-bg, #fff);
+  background: var(--initial-loader-bg, #161d31); /* Changed to dark mode default */
   block-size: 100%;
   gap: 1rem 0;
   inline-size: 100%;

@@ -1,21 +1,134 @@
+
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
-
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Serve static files directly (assets, images, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .* - [L]
+    
+    # Serve static directories directly  
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule .* - [L]
+    
+    # Handle build directory specifically - forward to Laravel if file not found
+    RewriteCond %{REQUEST_URI} ^/build/
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+    RewriteRule .* index.php [QSA,L]
+    
+    # Route everything else to Laravel
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# CORS Headers for API
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN"
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# MIME Types for JavaScript and CSS
+<IfModule mod_mime.c>
+    # Define JavaScript MIME types
+    AddType application/javascript .js
+    AddType application/javascript .mjs
+    AddType application/json .json
+    AddType text/css .css
+    
+    # Ensure JavaScript modules are served with correct MIME type
+    <FilesMatch "\.js$">
+        <IfModule mod_headers.c>
+            Header set Content-Type "application/javascript" "expr=-z %{CONTENT_TYPE}"
+        </IfModule>
+    </FilesMatch>
+    
+    # CSS MIME type enforcement
+    <FilesMatch "\.css$">
+        <IfModule mod_headers.c>
+            Header set Content-Type "text/css" "expr=-z %{CONTENT_TYPE}"
+        </IfModule>
+    </FilesMatch>
+    
+    # JSON MIME type enforcement
+    <FilesMatch "\.json$">
+        <IfModule mod_headers.c>
+            Header set Content-Type "application/json" "expr=-z %{CONTENT_TYPE}"
+        </IfModule>
+    </FilesMatch>
+</IfModule>
+
+# Add special handling for asset files in build directory
+<IfModule mod_rewrite.c>
+    # Make sure to serve JavaScript files from build with proper MIME type
+    RewriteCond %{REQUEST_URI} ^/build/.*\.js$
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .* - [T=application/javascript,L]
+    
+    # Make sure to serve CSS files from build with proper MIME type
+    RewriteCond %{REQUEST_URI} ^/build/.*\.css$
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .* - [T=text/css,L]
+    
+    # Handle JavaScript module files with hash in filename
+    RewriteCond %{REQUEST_URI} ^/build/assets/[^/]*\-[a-f0-9]+\.js$
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .* - [T=application/javascript,E=immutable:1,L]
+    
+    # Handle CSS files with hash in filename
+    RewriteCond %{REQUEST_URI} ^/build/assets/[^/]*\-[a-f0-9]+\.css$
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .* - [T=text/css,E=immutable:1,L]
+</IfModule>
+
+# Gzip Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Cache Control
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    ExpiresByType application/json "access plus 1 day"
+</IfModule>
+
+# Set Cache-Control headers for immutable assets
+<IfModule mod_headers.c>
+    # Immutable assets (files with hash in filename)
+    <FilesMatch "^.+\-[a-f0-9]+\.(js|css|png|jpg|jpeg|gif|webp|svg|woff|woff2)$">
+        Header append Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # For files with environment variable set by RewriteRule
+    Header append Cache-Control "public, max-age=31536000, immutable" env=immutable
+    
+    # Add cross-origin policy headers for fonts and scripts
+    <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font\.css|css|js)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
 </IfModule>

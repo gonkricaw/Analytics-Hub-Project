@@ -25,7 +25,7 @@
           />
           <i
             v-else
-            class="fas fa-circle menu-bullet"
+            :class="getStatusIcon('default')"
           />
         </div>
         
@@ -36,17 +36,14 @@
           class="menu-expand-icon"
           @click.stop="toggleExpanded(item.id)"
         >
-          <i
-            class="fas fa-chevron-right"
-            :class="{ 'rotated': expandedItems.includes(item.id) }"
-          />
+          <i :class="[getNavigationIcon('expand'), { 'rotated': expandedItems.includes(item.id) }]" />
         </div>
         
         <div
           v-if="item.type === 'url'"
           class="menu-external-icon"
         >
-          <i class="fas fa-external-link-alt" />
+          <i :class="getNavigationIcon('external')" />
         </div>
       </div>
       
@@ -63,6 +60,7 @@
 </template>
 
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem.js'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -81,6 +79,9 @@ const emit = defineEmits(['menu-click'])
 
 const route = useRoute()
 const expandedItems = ref([])
+
+// Icon system
+const { getNavigationIcon, getStatusIcon } = useIconSystem()
 
 const isActiveItem = item => {
   if (item.type === 'route' && item.route_or_url) {

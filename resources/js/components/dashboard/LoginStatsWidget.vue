@@ -1,27 +1,17 @@
 <script setup>
+import { useIconSystem } from '@/composables/useIconSystem'
 import {
-    CategoryScale,
-    Chart as ChartJS,
-    Filler,
-    Legend,
-    LinearScale,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-} from 'chart.js'
-import { Line } from 'vue-chartjs'
-
-ChartJS.register(
   CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler
-)
+} from 'chart.js'
+import { Line } from 'vue-chartjs'
 
 const props = defineProps({
   chartData: {
@@ -37,6 +27,19 @@ const props = defineProps({
     default: 0,
   },
 })
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
+
+const { getStatusIcon, getEntityIcon } = useIconSystem()
 
 const chartDataset = computed(() => ({
   labels: props.chartData.map(item => item.date),
@@ -135,7 +138,7 @@ const chartOptions = computed(() => ({
     <VCardTitle class="d-flex align-center justify-space-between">
       <div class="d-flex align-center">
         <VIcon
-          icon="fa-chart-line"
+          :icon="getStatusIcon('info')"
           class="me-3"
           color="primary"
         />
@@ -159,7 +162,7 @@ const chartOptions = computed(() => ({
         >
           <div class="stat-card">
             <VIcon
-              icon="fa-sign-in-alt"
+              :icon="getStatusIcon('success')"
               color="primary"
               size="20"
               class="mb-2"
@@ -178,7 +181,7 @@ const chartOptions = computed(() => ({
         >
           <div class="stat-card">
             <VIcon
-              icon="fa-users"
+              :icon="getEntityIcon('user')"
               color="secondary"
               size="20"
               class="mb-2"

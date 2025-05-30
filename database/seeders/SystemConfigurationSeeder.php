@@ -125,5 +125,79 @@ class SystemConfigurationSeeder extends Seeder
             'Dashboard digital clock format (12h or 24h)',
             true
         );
+
+        // Login Page Customization
+        SystemConfiguration::setByKey(
+            'login_welcome_message',
+            'Welcome to Indonet Analytics Hub',
+            'text',
+            'Login page welcome message',
+            true
+        );
+
+        SystemConfiguration::setByKey(
+            'login_subtitle',
+            'Please sign in to your account and start the adventure',
+            'text',
+            'Login page subtitle message',
+            true
+        );
+
+        SystemConfiguration::setByKey(
+            'login_show_logo',
+            true,
+            'boolean',
+            'Whether to show logo on login page',
+            true
+        );
+
+        SystemConfiguration::setByKey(
+            'login_custom_css',
+            '',
+            'text',
+            'Custom CSS for login page styling',
+            false
+        );
+
+        // General Settings
+        SystemConfiguration::setByKey(
+            'general_maintenance_mode',
+            false,
+            'boolean',
+            'Enable maintenance mode for the application',
+            false
+        );
+
+        SystemConfiguration::setByKey(
+            'general_maintenance_message',
+            'System is under maintenance. Please try again later.',
+            'text',
+            'Message displayed during maintenance mode',
+            false
+        );
+
+        SystemConfiguration::setByKey(
+            'general_timezone',
+            'Asia/Jakarta',
+            'text',
+            'Default application timezone',
+            true
+        );
+
+        SystemConfiguration::setByKey(
+            'general_date_format',
+            'Y-m-d',
+            'text',
+            'Default date format for the application',
+            true
+        );
+
+        SystemConfiguration::setByKey(
+            'general_time_format',
+            'H:i:s',
+            'text',
+            'Default time format for the application',
+            true
+        );
     }
 }

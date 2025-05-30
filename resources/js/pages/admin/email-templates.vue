@@ -3,7 +3,10 @@
     <VCard class="mb-6">
       <VCardText>
         <VRow>
-          <VCol cols="12" md="6">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <h4 class="text-h4 font-weight-semibold mb-0">
               Email Templates
             </h4>
@@ -11,11 +14,15 @@
               Manage email templates for system communications
             </p>
           </VCol>
-          <VCol cols="12" md="6" class="d-flex justify-end align-center">
+          <VCol
+            cols="12"
+            md="6"
+            class="d-flex justify-end align-center"
+          >
             <VBtn 
               color="primary" 
-              @click="openCreateDialog"
               prepend-icon="tabler-plus"
+              @click="openCreateDialog"
             >
               Create Template
             </VBtn>
@@ -29,7 +36,10 @@
       <VCardText>
         <!-- Filters -->
         <VRow class="mb-4">
-          <VCol cols="12" md="4">
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VTextField
               v-model="searchQuery"
               placeholder="Search templates..."
@@ -38,7 +48,10 @@
               @input="debouncedSearch"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="selectedType"
               :items="typeOptions"
@@ -47,7 +60,10 @@
               @update:model-value="fetchTemplates"
             />
           </VCol>
-          <VCol cols="12" md="3">
+          <VCol
+            cols="12"
+            md="3"
+          >
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
@@ -59,9 +75,14 @@
         </VRow>
 
         <!-- Loading State -->
-        <div v-if="loading" class="text-center py-6">
+        <div
+          v-if="loading"
+          class="text-center py-6"
+        >
           <VProgressCircular indeterminate />
-          <p class="mt-2">Loading templates...</p>
+          <p class="mt-2">
+            Loading templates...
+          </p>
         </div>
 
         <!-- Templates Data Table -->
@@ -199,9 +220,15 @@
         </VCardTitle>
 
         <VCardText>
-          <VForm ref="formRef" v-model="formValid">
+          <VForm
+            ref="formRef"
+            v-model="formValid"
+          >
             <VRow>
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VTextField
                   v-model="formData.name"
                   label="Template Name"
@@ -209,7 +236,10 @@
                   required
                 />
               </VCol>
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VSelect
                   v-model="formData.type"
                   :items="templateTypes"
@@ -300,13 +330,23 @@
 
         <VCardText>
           <VTabs v-model="previewTab">
-            <VTab value="html">HTML Preview</VTab>
-            <VTab value="text">Text Preview</VTab>
+            <VTab value="html">
+              HTML Preview
+            </VTab>
+            <VTab value="text">
+              Text Preview
+            </VTab>
           </VTabs>
 
-          <VWindow v-model="previewTab" class="mt-4">
+          <VWindow
+            v-model="previewTab"
+            class="mt-4"
+          >
             <VWindowItem value="html">
-              <div class="preview-container" v-html="previewData?.html_content" />
+              <div
+                class="preview-container"
+                v-html="previewData?.html_content"
+              />
             </VWindowItem>
             <VWindowItem value="text">
               <pre class="text-content-preview">{{ previewData?.text_content }}</pre>
@@ -331,8 +371,17 @@
 <script setup>
 import { useApi } from '@/composables/useApi'
 import { useToast } from '@/composables/useToast'
-import { debounce } from 'lodash-es'
 import { computed, onMounted, ref } from 'vue'
+
+// Simple debounce implementation
+const debounce = (func, delay) => {
+  let timeoutId
+  
+  return (...args) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(null, args), delay)
+  }
+}
 
 // Composables
 const { api } = useApi()
@@ -358,6 +407,7 @@ const previewTab = ref('html')
 
 // Form
 const formRef = ref()
+
 const formData = ref({
   name: '',
   type: '',
@@ -365,7 +415,7 @@ const formData = ref({
   description: '',
   html_content: '',
   text_content: '',
-  is_active: true
+  is_active: true,
 })
 
 // Table headers
@@ -375,7 +425,7 @@ const headers = [
   { title: 'Subject', key: 'subject', sortable: false },
   { title: 'Status', key: 'is_active', sortable: true },
   { title: 'Created', key: 'created_at', sortable: true },
-  { title: 'Actions', key: 'actions', sortable: false, width: '200px' }
+  { title: 'Actions', key: 'actions', sortable: false, width: '200px' },
 ]
 
 // Options
@@ -384,18 +434,18 @@ const templateTypes = [
   { title: 'Password Reset', value: 'password_reset' },
   { title: 'Welcome', value: 'welcome' },
   { title: 'Notification', value: 'notification' },
-  { title: 'General', value: 'general' }
+  { title: 'General', value: 'general' },
 ]
 
 const typeOptions = computed(() => [
   { title: 'All Types', value: null },
-  ...templateTypes
+  ...templateTypes,
 ])
 
 const statusOptions = [
   { title: 'All Status', value: null },
   { title: 'Active', value: true },
-  { title: 'Inactive', value: false }
+  { title: 'Inactive', value: false },
 ]
 
 // Methods
@@ -409,10 +459,11 @@ const fetchTemplates = async (options = {}) => {
       sort_order: options.sortBy?.[0]?.order || 'desc',
       search: searchQuery.value,
       type: selectedType.value,
-      is_active: selectedStatus.value
+      is_active: selectedStatus.value,
     }
 
     const response = await api.get('/admin/email-templates', { params })
+
     templates.value = response.data.data
     totalTemplates.value = response.data.total
   } catch (error) {
@@ -423,7 +474,7 @@ const fetchTemplates = async (options = {}) => {
   }
 }
 
-const loadItems = (options) => {
+const loadItems = options => {
   fetchTemplates(options)
 }
 
@@ -437,7 +488,7 @@ const openCreateDialog = () => {
   showDialog.value = true
 }
 
-const editTemplate = (template) => {
+const editTemplate = template => {
   editingTemplate.value = template
   formData.value = { ...template }
   showDialog.value = true
@@ -456,7 +507,7 @@ const resetForm = () => {
     description: '',
     html_content: '',
     text_content: '',
-    is_active: true
+    is_active: true,
   }
   formRef.value?.resetValidation()
 }
@@ -484,16 +535,17 @@ const saveTemplate = async () => {
   }
 }
 
-const previewTemplate = async (template) => {
+const previewTemplate = async template => {
   try {
     const response = await api.post(`/admin/email-templates/${template.id}/preview`, {
       sample_data: {
         app_name: 'Analytics Hub',
         user_name: 'John Doe',
         reset_link: 'https://example.com/reset',
-        login_url: 'https://example.com/login'
-      }
+        login_url: 'https://example.com/login',
+      },
     })
+
     previewData.value = response.data
     showPreviewDialog.value = true
   } catch (error) {
@@ -502,7 +554,7 @@ const previewTemplate = async (template) => {
   }
 }
 
-const cloneTemplate = async (template) => {
+const cloneTemplate = async template => {
   try {
     await api.post(`/admin/email-templates/${template.id}/clone`)
     showToast('Template cloned successfully', 'success')
@@ -513,7 +565,7 @@ const cloneTemplate = async (template) => {
   }
 }
 
-const toggleStatus = async (template) => {
+const toggleStatus = async template => {
   try {
     await api.post(`/admin/email-templates/${template.id}/toggle-status`)
     showToast(`Template ${template.is_active ? 'deactivated' : 'activated'} successfully`, 'success')
@@ -524,7 +576,7 @@ const toggleStatus = async (template) => {
   }
 }
 
-const deleteTemplate = async (template) => {
+const deleteTemplate = async template => {
   if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return
 
   try {
@@ -537,18 +589,19 @@ const deleteTemplate = async (template) => {
   }
 }
 
-const getTypeColor = (type) => {
+const getTypeColor = type => {
   const colors = {
     invitation: 'primary',
     password_reset: 'warning',
     welcome: 'success',
     notification: 'info',
-    general: 'secondary'
+    general: 'secondary',
   }
+  
   return colors[type] || 'secondary'
 }
 
-const formatType = (type) => {
+const formatType = type => {
   return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 

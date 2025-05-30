@@ -10,9 +10,19 @@ const needsPasswordChange = ref(false)
 const needsTermsAcceptance = ref(false)
 const currentTermsVersion = ref(null)
 
-// Setup axios defaults
+// Setup axios defaults with proper base URL for XAMPP
+const isXAMPP = window.location.pathname.includes('/Analytics-Hub-Project/')
+const baseURL = isXAMPP ? '/Analytics-Hub-Project/public/api' : '/api'
+const csrfBaseURL = isXAMPP ? '/Analytics-Hub-Project/public' : '/'
+
 axios.defaults.withCredentials = true
-axios.defaults.baseURL = '/api'
+axios.defaults.baseURL = baseURL
+
+// Create separate axios instance for non-API routes (like CSRF)
+const baseAxios = axios.create({
+  withCredentials: true,
+  baseURL: csrfBaseURL
+})
 
 // Add response interceptor to handle authentication errors
 axios.interceptors.response.use(
@@ -66,8 +76,8 @@ export function useAuth() {
   // Methods
   const login = async credentials => {
     try {
-      // Get CSRF cookie first
-      await axios.get('/sanctum/csrf-cookie')
+      // Get CSRF cookie first (use baseAxios for non-API routes)
+      await baseAxios.get('/sanctum/csrf-cookie')
       
       const response = await axios.post('/login', {
         email: credentials.email,

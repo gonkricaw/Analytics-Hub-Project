@@ -1,0 +1,83 @@
+// Fixed version of template Vuetify variables
+
+@use "sass:math";
+
+$font-family-custom: "Public Sans",sans-serif,-apple-system,blinkmacsystemfont,
+  "Segoe UI",roboto,"Helvetica Neue",arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+
+/* 👉 Typography custom variables */
+$typography-h5-font-size: 1.125rem;
+$typography-body-1-font-size: 0.9375rem;
+$typography-body-1-line-height: 1.375rem;
+
+@forward "../../../base/libs/vuetify/variables" with (
+  $body-font-family: $font-family-custom,
+  $border-radius-root: 6px,
+
+  // 👉 Rounded
+  $rounded: (
+    "sm": 4px,
+    "lg": 8px,
+    "shaped": 30px 0,
+  ),
+
+  // 👉 Typography
+  $h1-letter-spacing: 0,
+  $h2-letter-spacing: 0,
+  $h3-letter-spacing: 0,
+  $h4-letter-spacing: 0,
+  $h5-letter-spacing: 0,
+  $h6-letter-spacing: 0,
+  $blockquote-font-size: 1.5rem,
+  $subtitle-font-weight: 400,
+  $subtitle-letter-spacing: 0,
+  $body-font-weight: 400,
+  $body-1-letter-spacing: 0,
+  $body-2-letter-spacing: 0,
+  $caption-letter-spacing: 0,
+  $overline-letter-spacing: 0,
+  $chip-letter-spacing: 0,
+  $button-letter-spacing: normal,
+  $button-font-weight: 500,
+  $letter-spacing-root: 0,
+  
+  // 👉 Card
+  $card-title-font-size: $typography-h5-font-size,
+  $card-text-font-size: $typography-body-1-font-size,
+  $card-subtitle-font-size: 0.9375rem,
+  $card-subtitle-header-padding: 0,
+  $card-subtitle-line-height: 1.375rem,
+  $card-title-line-height: 1.75rem,
+  $card-text-padding: 24px,
+  $card-text-line-height: 1.375rem,
+  $card-item-padding: 24px,
+  $card-elevation: 6,
+
+  // 👉 Carousel
+  $carousel-dot-margin: 0,
+  $carousel-dot-inactive-opacity: 0.4,
+
+  // 👉 Expansion Panel
+  $expansion-panel-title-padding: 12px 20px 12px 24px,
+  $expansion-panel-title-min-height: 48px,
+  $expansion-panel-active-margin: 16px,
+  $expansion-panel-header-padding: 0,
+
+  // 👉 List
+  $list-border-radius: 6px,
+  $list-item-title-font-weight: 500,
+  $list-item-subtitle-font-weight: 400,
+
+  // 👉 Snackbar
+  $snackbar-background-color: rgba(59, 55, 68, 0.9),
+
+  // 👉 Slider
+  $slider-track-border-radius: 999px,
+  $slider-thumb-size: 14px,
+
+  // 👉 Table
+  $table-header-height: 44px,
+  $table-row-height: 44px,
+  
+  $card-subtitle-font-weight: 400
+)
